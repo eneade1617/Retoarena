@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#101022">
+  <meta name="description" content="RetoArena: juega, participa en retos y descubre a la comunidad.">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" href="icon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="styles.css">
+  <title>RetoArena — Juega. Reta. Brilla.</title>
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="#" aria-label="RetoArena inicio"><span class="brand-mark">R</span><span>Reto<span class="accent">Arena</span></span></a>
+    <button id="installBtn" class="install-btn hidden" type="button">Instalar app</button>
+    <div class="avatar" title="Modo demostración">RA</div>
+  </header>
+
+  <main>
+    <section class="hero">
+      <div class="hero-copy">
+        <span class="eyebrow"><span class="pulse"></span> LA ARENA ESTÁ ABIERTA</span>
+        <h1>Juega. <span class="gradient-text">Reta.</span><br>Brilla.</h1>
+        <p>Compite en minijuegos, descubre retos de la comunidad y sube en el ranking.</p>
+        <button class="primary-btn" id="exploreBtn">Explorar retos <span>↗</span></button>
+      </div>
+      <div class="hero-art" aria-hidden="true">
+        <div class="orbit orbit-one"></div><div class="orbit orbit-two"></div>
+        <div class="trophy">🏆</div><div class="spark spark-a">✦</div><div class="spark spark-b">✧</div>
+        <div class="floating-card card-top"><span>⚡</span><div><b>Reto relámpago</b><small>¿Tienes reflejos?</small></div></div>
+        <div class="floating-card card-bottom"><span>🔥</span><div><b>Comunidad activa</b><small>¡Tu turno de brillar!</small></div></div>
+      </div>
+    </section>
+
+    <section class="stats">
+      <div><strong id="statChallenges">6</strong><span>Retos abiertos</span></div>
+      <div><strong id="statPlayers">128</strong><span>Jugadores demo</span></div>
+      <div><strong>0 €</strong><span>Coste para participar</span></div>
+    </section>
+
+    <section class="section" id="challenges">
+      <div class="section-heading"><div><span class="eyebrow">ELIGE TU SIGUIENTE JUGADA</span><h2>Retos destacados</h2></div>
+        <div class="filters" role="group" aria-label="Filtrar retos">
+          <button class="filter active" data-filter="todos">Todos</button>
+          <button class="filter" data-filter="juego">Minijuegos</button>
+          <button class="filter" data-filter="real">Retos reales</button>
+        </div>
+      </div>
+      <div class="challenge-grid" id="challengeGrid"></div>
+    </section>
+
+    <section class="section split-section">
+      <div class="section-heading"><div><span class="eyebrow">LA COMUNIDAD DECIDE</span><h2>Retos de la gente</h2></div><span class="demo-tag">DATOS DE DEMOSTRACIÓN</span></div>
+      <div class="community-grid" id="communityGrid"></div>
+    </section>
+
+    <section class="section leaderboard-section">
+      <div class="section-heading"><div><span class="eyebrow">SUBE DE NIVEL</span><h2>Ranking semanal</h2></div><span class="pill">♛ Temporada piloto</span></div>
+      <div class="leaderboard" id="leaderboard"></div>
+    </section>
+
+    <section class="sponsor-note">
+      <div class="sponsor-icon">🤝</div><div><h3>Premios reales, solo con patrocinio confirmado</h3><p>Esta versión no promete dinero ni premios. Cuando una marca confirme una campaña y sus condiciones, se publicará aquí con las bases y fechas.</p></div>
+      <span class="status-chip">Sin premios activos</span>
+    </section>
+
+    <footer><a class="brand footer-brand" href="#"><span class="brand-mark">R</span><span>Reto<span class="accent">Arena</span></span></a><span>Prototipo piloto · v0.1</span><span>Juega limpio. Respeta a todos.</span></footer>
+  </main>
+
+  <nav class="mobile-nav" aria-label="Navegación principal">
+    <a class="nav-item active" href="#"><span>⌂</span>Inicio</a>
+    <a class="nav-item" href="#challenges"><span>⚡</span>Retos</a>
+    <button class="nav-item" id="submitNav"><span>＋</span>Publicar</button>
+    <a class="nav-item" href="#leaderboard"><span>♛</span>Ranking</a>
+  </nav>
+
+  <dialog id="gameDialog" class="modal">
+    <form method="dialog"><button class="close-btn" aria-label="Cerrar">×</button></form>
+    <div id="gameContent"></div>
+  </dialog>
+  <dialog id="submitDialog" class="modal">
+    <form method="dialog"><button class="close-btn" aria-label="Cerrar">×</button></form>
+    <span class="eyebrow">TU MOMENTO</span><h2>Publica un reto real</h2>
+    <p class="modal-intro">En esta versión, añade un enlace a un vídeo público. No subas contenido peligroso, datos personales ni material de otras personas sin permiso.</p>
+    <form id="submitForm" class="submit-form">
+      <label>Nombre del reto<input name="title" required maxlength="70" placeholder="Ej. Mi mejor truco de fútbol"></label>
+      <label>Tu nombre público<input name="creator" required maxlength="30" placeholder="Ej. Alex"></label>
+      <label>Enlace del vídeo<input name="url" required type="url" placeholder="https://..." pattern="https?://.+" ></label>
+      <label>Descripción<textarea name="description" maxlength="180" placeholder="¿Qué tiene que valorar la comunidad?"></textarea></label>
+      <p class="form-hint">Los retos enviados se guardan solo en este navegador y aparecen como pendientes de revisión en esta demo.</p>
+      <button class="primary-btn full" type="submit">Enviar para revisión ↗</button>
+    </form>
+    <div id="submitFeedback" class="feedback hidden" role="status"></div>
+  </dialog>
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+  <script src="app.js"></script>
+</body>
+</html>
