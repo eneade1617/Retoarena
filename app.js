@@ -90,6 +90,40 @@ document.querySelectorAll(".filter").forEach(b=>b.addEventListener("click",()=>{
 $("#exploreBtn").addEventListener("click",()=>$("#challenges").scrollIntoView({behavior:"smooth"}));
 $("#submitNav").addEventListener("click",()=>$("#submitDialog").showModal());
 $("#submitForm").addEventListener("submit",e=>{e.preventDefault();const fd=new FormData(e.target);const url=String(fd.get("url")).trim();if(!/^https?:\/\//i.test(url)){toast("Introduce un enlace válido que empiece por https://");return}const sub={id:"local-"+Date.now(),title:String(fd.get("title")).trim(),creator:String(fd.get("creator")).trim(),url,description:String(fd.get("description")||"").trim(),status:"pending",createdAt:new Date().toISOString()};localSubmissions.unshift(sub);localStorage.setItem("retoarena_submissions",JSON.stringify(localSubmissions));renderCommunity();$("#submitFeedback").classList.remove("hidden");$("#submitFeedback").textContent="Envío guardado en este dispositivo y marcado como pendiente. En esta demo no se publica en un servidor ni lo recibe un moderador.";e.target.reset();toast("Reto guardado localmente")});
+
+document.addEventListener("retoarena:retos-cargados", (event) => {
+  const retos = Array.isArray(event.detail) ? event.detail : [];
+  const idsExistentes = new Set(challenges.map((reto) => reto.id));
+
+  retos.forEach((reto) => {
+    const id = `supabase-${reto.id}`;
+
+    if (idsExistentes.has(id)) return;
+
+    const esJuego = reto.category === "juego";
+
+    challenges.push({
+      id,
+      type: esJuego ? "juego" : "real",
+      title: reto.title || "Reto de la comunidad",
+      desc: reto.description || "Descubre este reto de la comunidad.",
+      icon: esJuego ? "🎮" : "🎬",
+      art: esJuego ? "art-blue" : "art-pink",
+      tag: esJuego ? "MINIJUEGO" : "RETO REAL",
+      players: "Reto aprobado",
+      action: esJuego ? "Jugar ahora" : "Ver reto",
+      videoUrl: reto.video_url || ""
+    });
+
+    idsExistentes.add(id);
+  });
+
+  const filtroActivo = document.querySelector(".filter.active");
+
+  renderChallenges(
+    filtroActivo ? filtroActivo.dataset.filter : "todos"
+  );
+});
 renderChallenges();renderCommunity();renderLeaderboard();
 window.addEventListener("beforeinstallprompt",e=>{e.preventDefault();deferredInstallPrompt=e;$("#installBtn").classList.remove("hidden")});
 $("#installBtn").addEventListener("click",async()=>{if(!deferredInstallPrompt){toast("En iPhone: abre el menú Compartir de Safari y elige “Añadir a pantalla de inicio”.");return}deferredInstallPrompt.prompt();await deferredInstallPrompt.userChoice;deferredInstallPrompt=null;$("#installBtn").classList.add("hidden")});
