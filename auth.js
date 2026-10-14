@@ -221,7 +221,7 @@
         const { error } = await db.from("challenges").insert({
           title,
           description,
-          category: "comunidad",
+          category: "real",
           status: "pending",
           creator_id: user.id,
           video_url: videoUrl
