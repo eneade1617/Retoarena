@@ -6,3 +6,5 @@ const supabaseClient = window.supabase.createClient(
   SUPABASE_URL,
   SUPABASE_PUBLISHABLE_KEY
 );
+window.retoArenaSupabase = supabaseClient;
+console.log("RetoArena: cliente Supabase inicializado");
