@@ -36,9 +36,10 @@ const $ = (sel) => document.querySelector(sel);
 function toast(message){const el=$("#toast");el.textContent=message;el.classList.add("show");clearTimeout(toast.timer);toast.timer=setTimeout(()=>el.classList.remove("show"),2600)}
 
 
+
 function renderChallenges(filter = "todos") {
-  // challenges ya contiene los minijuegos originales
-  // y los retos aprobados cargados desde Supabase.
+  // La lista challenges ya contiene los minijuegos originales
+  // y los retos aprobados que carga retos-supabase.js.
   const todosLosRetos = challenges;
 
   const list = todosLosRetos.filter(c =>
@@ -58,7 +59,7 @@ function renderChallenges(filter = "todos") {
           <span>👥 ${c.players || 0}</span>
           <span>${c.type === "real" ? "Comunidad" : "Puntos demo"}</span>
         </div>
-        <button class="play-btn" data-challenge="${escapeHtml(c.id)}">
+        <button class="play-btn" data-challenge="${c.id}">
           ${escapeHtml(c.action || "Ver reto")} <span>›</span>
         </button>
       </div>
@@ -67,6 +68,7 @@ function renderChallenges(filter = "todos") {
 
   $("#statChallenges").textContent = String(list.length);
 }
+
 
 
 function renderCommunity() {
