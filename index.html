@@ -4,43 +4,75 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="theme-color" content="#101022">
-  <meta name="description" content="RetoArena: juega, participa en retos y descubre a la comunidad.">
+  <meta name="description" content="RetoArena: compite, reta en directo y descubre a la comunidad.">
   <link rel="manifest" href="manifest.webmanifest">
   <link rel="icon" href="icon.svg" type="image/svg+xml">
   <link rel="stylesheet" href="styles.css">
-  <title>RetoArena — Juega. Reta. Brilla.</title>
+  <title>RetoArena — Entra en la arena</title>
 </head>
 <body>
   <header class="topbar">
     <a class="brand" href="#" aria-label="RetoArena inicio"><span class="brand-mark">R</span><span>Reto<span class="accent">Arena</span></span></a>
     <button id="installBtn" class="install-btn hidden" type="button">Instalar app</button>
-    <div class="avatar" title="Modo demostración">RA</div>
+    <div class="avatar" title="Tu perfil">RA</div>
   </header>
 
   <main>
     <section class="hero">
       <div class="hero-copy">
-        <span class="eyebrow"><span class="pulse"></span> LA ARENA ESTÁ ABIERTA</span>
-        <h1>Juega. <span class="gradient-text">Reta.</span><br>Brilla.</h1>
-        <p>Compite en minijuegos, descubre retos de la comunidad y sube en el ranking.</p>
-        <button class="primary-btn" id="exploreBtn">Explorar retos <span>↗</span></button>
+        <span class="eyebrow"><span class="pulse"></span> TU SIGUIENTE RETO TE ESPERA</span>
+        <h1>¿Tienes lo que<br>hace falta para <span class="gradient-text">ganar?</span></h1>
+        <p>Entra en la arena, demuestra tu talento y escala la clasificación. La comunidad mira. Tú decides hasta dónde llegar.</p>
+        <button class="primary-btn" id="exploreBtn">Entrar en la arena <span>↗</span></button>
       </div>
       <div class="hero-art" aria-hidden="true">
         <div class="orbit orbit-one"></div><div class="orbit orbit-two"></div>
-        <div class="trophy">🏆</div><div class="spark spark-a">✦</div><div class="spark spark-b">✧</div>
-        <div class="floating-card card-top"><span>⚡</span><div><b>Reto relámpago</b><small>¿Tienes reflejos?</small></div></div>
-        <div class="floating-card card-bottom"><span>🔥</span><div><b>Comunidad activa</b><small>¡Tu turno de brillar!</small></div></div>
+        <div class="trophy">⚔️</div><div class="spark spark-a">✦</div><div class="spark spark-b">✧</div>
+        <div class="floating-card card-top"><span>🔴</span><div><b>La arena te observa</b><small>Tu momento empieza aquí</small></div></div>
+        <div class="floating-card card-bottom"><span>🏆</span><div><b>32 competidores</b><small>Una temporada. Un campeón.</small></div></div>
       </div>
     </section>
 
+    <section class="arena-live section" id="liveArena" aria-labelledby="liveArenaTitle">
+      <div class="arena-live-head">
+        <div>
+          <span class="eyebrow"><span class="pulse"></span> TEMPORADA 01 · PREPARANDO LA ARENA</span>
+          <h2 id="liveArenaTitle">Batallas en <span class="gradient-text">directo</span></h2>
+          <p>Dos competidores. Un reto elegido por la comunidad. El público decide con reglas claras.</p>
+        </div>
+        <span class="live-status"><span></span> PRÓXIMAMENTE</span>
+      </div>
+      <div class="battle-preview-grid">
+        <article class="battle-preview battle-red">
+          <div class="battle-topline"><span class="battle-label">ESQUINA ROJA</span><span>COMPETIDOR 01</span></div>
+          <div class="fighter-avatar">🔥</div>
+          <h3>Tu nombre aquí</h3>
+          <p>Demuestra de qué estás hecho.</p>
+        </article>
+        <div class="versus-mark" aria-label="Contra">VS</div>
+        <article class="battle-preview battle-blue">
+          <div class="battle-topline"><span class="battle-label">ESQUINA AZUL</span><span>COMPETIDOR 02</span></div>
+          <div class="fighter-avatar">⚡</div>
+          <h3>Tu rival aquí</h3>
+          <p>Solo uno se lleva la victoria.</p>
+        </article>
+      </div>
+      <div class="battle-rules-strip">
+        <div><span>01</span><b>Reto del día</b><small>Individual o batalla</small></div>
+        <div><span>02</span><b>Voto del público</b><small>Con límites antifraude</small></div>
+        <div><span>03</span><b>Puntos de temporada</b><small>Clasificación transparente</small></div>
+      </div>
+      <p class="prototype-note">Vista previa de diseño. Las retransmisiones en vivo, los emparejamientos y los votos en tiempo real aún están por implementar.</p>
+    </section>
+
     <section class="stats">
-      <div><strong id="statChallenges">6</strong><span>Retos abiertos</span></div>
-      <div><strong id="statPlayers">128</strong><span>Jugadores demo</span></div>
+      <div><strong id="statChallenges">6</strong><span>Retos publicados</span></div>
+      <div><strong>32</strong><span>Plazas temporada 01</span></div>
       <div><strong>0 €</strong><span>Coste para participar</span></div>
     </section>
 
     <section class="section" id="challenges">
-      <div class="section-heading"><div><span class="eyebrow">ELIGE TU SIGUIENTE JUGADA</span><h2>Retos destacados</h2></div>
+      <div class="section-heading"><div><span class="eyebrow">CADA DÍA CUENTA</span><h2>Retos destacados</h2></div>
         <div class="filters" role="group" aria-label="Filtrar retos">
           <button class="filter active" data-filter="todos">Todos</button>
           <button class="filter" data-filter="juego">Minijuegos</button>
@@ -51,26 +83,26 @@
     </section>
 
     <section class="section split-section">
-      <div class="section-heading"><div><span class="eyebrow">LA COMUNIDAD DECIDE</span><h2>Retos de la gente</h2></div><span class="demo-tag">DATOS DE DEMOSTRACIÓN</span></div>
+      <div class="section-heading"><div><span class="eyebrow">LA COMUNIDAD DECIDE</span><h2>Retos de la gente</h2></div><span class="demo-tag">COMUNIDAD</span></div>
       <div class="community-grid" id="communityGrid"></div>
     </section>
 
     <section class="section leaderboard-section">
-      <div class="section-heading"><div><span class="eyebrow">SUBE DE NIVEL</span><h2>Ranking semanal</h2></div><span class="pill">♛ Temporada piloto</span></div>
+      <div class="section-heading"><div><span class="eyebrow">CADA PUNTO TE ACERCA</span><h2>Ranking semanal</h2></div><span class="pill">♛ Temporada piloto</span></div>
       <div class="leaderboard" id="leaderboard"></div>
     </section>
 
     <section class="sponsor-note">
-      <div class="sponsor-icon">🤝</div><div><h3>Premios reales, solo con patrocinio confirmado</h3><p>Esta versión no promete dinero ni premios. Cuando una marca confirme una campaña y sus condiciones, se publicará aquí con las bases y fechas.</p></div>
+      <div class="sponsor-icon">🤝</div><div><h3>Premios y retos responsables</h3><p>No se prometen premios ni dinero sin patrocinio confirmado y bases publicadas. Los retos deben ser seguros, respetuosos y cumplir las reglas de la temporada.</p></div>
       <span class="status-chip">Sin premios activos</span>
     </section>
 
-    <footer><a class="brand footer-brand" href="#"><span class="brand-mark">R</span><span>Reto<span class="accent">Arena</span></span></a><span>Prototipo piloto · v0.1</span><span>Juega limpio. Respeta a todos.</span></footer>
+    <footer><a class="brand footer-brand" href="#"><span class="brand-mark">R</span><span>Reto<span class="accent">Arena</span></span></a><span>Temporada piloto · v0.2</span><span>Compite limpio. Respeta a todos.</span></footer>
   </main>
 
   <nav class="mobile-nav" aria-label="Navegación principal">
     <a class="nav-item active" href="#"><span>⌂</span>Inicio</a>
-    <a class="nav-item" href="#challenges"><span>⚡</span>Retos</a>
+    <a class="nav-item" href="#liveArena"><span>⚔</span>Batallas</a>
     <button class="nav-item" id="submitNav"><span>＋</span>Publicar</button>
     <a class="nav-item" href="#leaderboard"><span>♛</span>Ranking</a>
   </nav>
@@ -82,27 +114,22 @@
   <dialog id="submitDialog" class="modal">
     <form method="dialog"><button class="close-btn" aria-label="Cerrar">×</button></form>
     <span class="eyebrow">TU MOMENTO</span><h2>Publica un reto real</h2>
-    <p class="modal-intro">En esta versión, añade un enlace a un vídeo público. No subas contenido peligroso, datos personales ni material de otras personas sin permiso.</p>
+    <p class="modal-intro">Añade un enlace a un vídeo público. No subas contenido peligroso, datos personales ni material de otras personas sin permiso.</p>
     <form id="submitForm" class="submit-form">
       <label>Nombre del reto<input name="title" required maxlength="70" placeholder="Ej. Mi mejor truco de fútbol"></label>
       <label>Tu nombre público<input name="creator" required maxlength="30" placeholder="Ej. Alex"></label>
-      <label>Enlace del vídeo<input name="url" required type="url" placeholder="https://..." pattern="https?://.+" ></label>
+      <label>Enlace del vídeo<input name="url" required type="url" placeholder="https://..." pattern="https?://.+"></label>
       <label>Descripción<textarea name="description" maxlength="180" placeholder="¿Qué tiene que valorar la comunidad?"></textarea></label>
-      
-<p class="form-hint">
-  Tu reto se guardará en RetoArena y quedará pendiente de revisión.
-  Solo se publicará cuando sea aprobado por moderación.
-</p>
-
+      <p class="form-hint">Tu reto se guardará en RetoArena y quedará pendiente de revisión. Solo se publicará cuando sea aprobado por moderación.</p>
       <button class="primary-btn full" type="submit">Enviar para revisión ↗</button>
     </form>
     <div id="submitFeedback" class="feedback hidden" role="status"></div>
   </dialog>
   <div id="toast" class="toast" role="status" aria-live="polite"></div>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="supabase-config.js"></script>
-<script src="app.js"></script>
-<script src="auth.js"></script>
-<script src="retos-supabase.js"></script>
+  <script src="supabase-config.js"></script>
+  <script src="app.js"></script>
+  <script src="auth.js"></script>
+  <script src="retos-supabase.js"></script>
 </body>
 </html>
