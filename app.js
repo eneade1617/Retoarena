@@ -108,10 +108,25 @@ function finishQuiz(){
 
 
 
-function openRealChallenge(id) {
+async function openRealChallenge(id) {
   const c = challenges.find(x => x.id === id);
   if (!c) return;
+  if (String(c.id).startsWith("supabase-")) {
+    const db = window.retoArenaSupabase;
 
+    if (!db) {
+      alert("No se pudo conectar con el sistema de cuentas.");
+      return;
+    }
+
+    const { data } = await db.auth.getSession();
+
+    if (!data.session) {
+      alert("Para participar en retos reales, inicia sesión o crea tu cuenta.");
+      document.querySelector("#accountBtn")?.click();
+      return;
+    }
+  }
   const esRetoGuardado = String(c.id).startsWith("supabase-");
   const contenido = $("#gameContent");
 
