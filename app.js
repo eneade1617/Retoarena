@@ -76,9 +76,46 @@ function renderChallenges(filter = "todos") {
   $("#statChallenges").textContent = String(list.length);
 }
 
-function renderCommunity(){
-  const combined=[...community,...localSubmissions.filter(s=>s.status==="pending").map(s=>({id:s.id,title:s.title,desc:s.description||"Reto enviado para revisión.",creator:s.creator,icon:"🎬",votes:0,pending:true}))];
-  $("#communityGrid").innerHTML=combined.map(c=>`<article class="community-card"><div class="community-thumb">${c.icon}</div><div class="community-content"><h3>${escapeHtml(c.title)}</h3><p>${escapeHtml(c.desc)}</p><div class="community-foot"><span class="creator">@${escapeHtml(c.creator)} ${c.pending? "· Pendiente":""}</span><button class="vote-btn" data-vote="${c.id}" ${c.pending?"disabled":""}>♡ ${c.votes+(votes[c.id]||0)} ${votes[c.id]?"· Votado":""}</button></div></div></article>`).join("");
+function renderCommunity() {
+  const retosAprobados = (window.retoArenaRetosAprobados || []).map(r => ({
+    id: "supabase-" + r.id,
+    title: r.title,
+    desc: r.description || "Reto aprobado por la comunidad.",
+    creator: "Comunidad",
+    icon: "🎬",
+    votes: 0,
+    pending: false
+  }));
+
+  const pendientes = localSubmissions
+    .filter(s => s.status === "pending")
+    .map(s => ({
+      id: s.id,
+      title: s.title,
+      desc: s.description || "Reto enviado para revisión.",
+      creator: s.creator || "Jugador",
+      icon: "🎬",
+      votes: 0,
+      pending: true
+    }));
+
+  const combined = [...retosAprobados, ...community, ...pendientes];
+
+  $("#communityGrid").innerHTML = combined.map(c =>
+    `<article class="community-card">
+      <div class="community-thumb">${c.icon}</div>
+      <div class="community-content">
+        <h3>${escapeHtml(c.title)}</h3>
+        <p>${escapeHtml(c.desc)}</p>
+        <div class="community-foot">
+          <span class="creator">@${escapeHtml(c.creator)}${c.pending ? " · Pendiente" : ""}</span>
+          <button class="vote-btn" data-vote="${escapeHtml(c.id)}" ${c.pending || String(c.id).startsWith("supabase-") ? "disabled" : ""}>
+            ♡ ${c.votes + (votes[c.id] || 0)}
+          </button>
+        </div>
+      </div>
+    </article>`
+  ).join("");
 }
 function renderLeaderboard(){
   const list=[...players]; if(points>0)list.push({name:"Tú (demo)",initials:"TÚ",points,label:"Tu puntuación local"});
