@@ -108,10 +108,15 @@ function finishQuiz(){
 
 
 
+```javascript
 async function openRealChallenge(id) {
   const c = challenges.find(x => x.id === id);
   if (!c) return;
-  if (String(c.id).startsWith("supabase-")) {
+
+  // Comprobar si el reto procede de Supabase
+  const esRetoGuardado = String(c.id).startsWith("supabase-");
+
+  if (esRetoGuardado) {
     const db = window.retoArenaSupabase;
 
     if (!db) {
@@ -119,17 +124,31 @@ async function openRealChallenge(id) {
       return;
     }
 
-    const { data } = await db.auth.getSession();
+    // Comprobar la sesión del usuario
+    const { data, error } = await db.auth.getSession();
+
+    if (error) {
+      alert("No se pudo comprobar tu sesión. Inténtalo de nuevo.");
+      return;
+    }
 
     if (!data.session) {
       alert("Para participar en retos reales, inicia sesión o crea tu cuenta.");
-      document.querySelector("#accountBtn")?.click();
+
+      const accountButton = document.querySelector("#accountBtn");
+
+      if (accountButton) {
+        accountButton.click();
+      } else {
+        alert("Pulsa el botón Entrar para iniciar sesión.");
+      }
+
       return;
     }
   }
-  const esRetoGuardado = String(c.id).startsWith("supabase-");
-  const contenido = $("#gameContent");
 
+  // Abrir el contenido del reto
+  const contenido = $("#gameContent");
   contenido.innerHTML = "";
 
   const titulo = document.createElement("h2");
@@ -151,41 +170,30 @@ async function openRealChallenge(id) {
 
     try {
       const url = new URL(c.videoUrl || "");
+
       if (url.protocol === "https:" || url.protocol === "http:") {
         urlValida = url.href;
       }
-    } catch (_) {}
+    } catch (error) {
+      urlValida = "";
+    }
 
     if (urlValida) {
       const enlace = document.createElement("a");
-      enlace.className = "primary-btn full";
       enlace.href = urlValida;
       enlace.target = "_blank";
       enlace.rel = "noopener noreferrer";
+      enlace.className = "primary-btn";
       enlace.textContent = "Ver vídeo ↗";
       contenido.appendChild(enlace);
     } else {
       const aviso = document.createElement("p");
-      aviso.className = "form-hint";
       aviso.textContent = "Este reto todavía no tiene un enlace de vídeo válido.";
       contenido.appendChild(aviso);
     }
-  } else {
-    const mensaje = document.createElement("div");
-    mensaje.className = "game-result";
-    mensaje.textContent =
-      "Prepara un vídeo seguro y comparte su enlace. Los retos se revisan manualmente y no hay premios activos.";
-    contenido.appendChild(mensaje);
-
-    const boton = document.createElement("button");
-    boton.className = "primary-btn full";
-    boton.id = "fromRealSubmit";
-    boton.textContent = "Publicar mi reto ↗";
-    contenido.appendChild(boton);
   }
-
-  $("#gameDialog").showModal();
 }
+```
 
 
 function openMemory(){
