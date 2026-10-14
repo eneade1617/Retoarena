@@ -1,4 +1,3 @@
-```javascript
 (async function () {
   const db = window.retoArenaSupabase;
 
@@ -49,4 +48,4 @@
 
   await cargarRetosAprobados();
 })();
-```
+
