@@ -73,6 +73,7 @@ function finishQuiz(){
 }
 
 
+
 function openRealChallenge(id) {
   const c = challenges.find(x => x.id === id);
   if (!c) return;
@@ -136,6 +137,7 @@ function openRealChallenge(id) {
 
   $("#gameDialog").showModal();
 }
+
 
 function openMemory(){
   const icons=["🍋","🎧","🚀","🐼","🎯","🌈","🍋","🎧","🚀","🐼","🎯","🌈"];
