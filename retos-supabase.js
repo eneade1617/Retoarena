@@ -10,23 +10,19 @@
   async function cargarRetosAprobados() {
     const { data, error } = await db
       .from("challenges")
-      .select("id, title, description, category, status, video_url, created_at")
+      .select("id, title, description, category, status, creator_id, video_url, created_at")
       .eq("status", "approved")
       .order("created_at", { ascending: false });
 
     if (error) {
-      console.error(
-        "RetoArena: error al cargar los retos:",
-        error.message
-      );
+      console.error("Error al cargar los retos:", error.message);
       return;
     }
 
-    // Guardar los retos aprobados que llegan desde Supabase.
-    window.retoArenaRetosAprobados = data || [];
+    const retos = data || [];
+    window.retoArenaRetosAprobados = retos;
 
-    // Quitar de la lista únicamente los retos de Supabase
-    // que se hayan añadido en una carga anterior.
+    // Eliminar los retos de Supabase anteriores antes de recargarlos.
     for (let i = challenges.length - 1; i >= 0; i--) {
       if (String(challenges[i].id).startsWith("supabase-")) {
         challenges.splice(i, 1);
@@ -34,22 +30,22 @@
     }
 
     // Añadir cada reto aprobado una sola vez.
-    window.retoArenaRetosAprobados.forEach(r => {
+    retos.forEach(r => {
       challenges.push({
         id: "supabase-" + r.id,
         type: r.category === "real" ? "real" : "juego",
         title: r.title,
         desc: r.description || "Reto de la comunidad.",
-        icon: "🎬",
+        icon: "🎯",
         art: "art-purple",
-        tag: "RETO REAL",
+        tag: "Comunidad",
         players: 0,
         action: "Ver reto",
         videoUrl: r.video_url || ""
       });
     });
 
-    // Actualizar las dos secciones de la aplicación.
+    // Actualizar las dos secciones.
     if (typeof renderChallenges === "function") {
       renderChallenges();
     }
@@ -58,13 +54,9 @@
       renderCommunity();
     }
 
-    console.log(
-      "RetoArena: retos aprobados cargados:",
-      window.retoArenaRetosAprobados.length
-    );
+    console.log("RetoArena: retos aprobados cargados:", retos.length);
   }
 
   window.retoArenaCargarRetosAprobados = cargarRetosAprobados;
-
   await cargarRetosAprobados();
 })();
