@@ -123,7 +123,7 @@ function openRealChallenge(id) {
   }
 
   $("#gameDialog").showModal();
-}
+
 
 }
 function openMemory(){
