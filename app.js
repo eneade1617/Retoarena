@@ -108,7 +108,6 @@ function finishQuiz(){
 
 
 
-```javascript
 async function openRealChallenge(id) {
   const c = challenges.find(x => x.id === id);
   if (!c) return;
