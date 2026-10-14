@@ -35,20 +35,12 @@ let deferredInstallPrompt = null;
 const $ = (sel) => document.querySelector(sel);
 function toast(message){const el=$("#toast");el.textContent=message;el.classList.add("show");clearTimeout(toast.timer);toast.timer=setTimeout(()=>el.classList.remove("show"),2600)}
 
-function renderChallenges(filter = "todos") {
-  const retosGuardados = (window.retoArenaRetosAprobados || []).map(r => ({
-    id: "supabase-" + r.id,
-    title: r.title,
-    desc: r.description || "Reto de la comunidad",
-    type: r.category === "real" ? "real" : "juego",
-    tag: "Comunidad",
-    icon: "🎯",
-    players: 0,
-    action: "Ver reto",
-    videoUrl: r.video_url || ""
-  }));
 
-  const todosLosRetos = [...challenges, ...retosGuardados];
+function renderChallenges(filter = "todos") {
+  // challenges ya contiene los minijuegos originales
+  // y los retos aprobados cargados desde Supabase.
+  const todosLosRetos = challenges;
+
   const list = todosLosRetos.filter(c =>
     filter === "todos" || c.type === filter
   );
@@ -66,7 +58,7 @@ function renderChallenges(filter = "todos") {
           <span>👥 ${c.players || 0}</span>
           <span>${c.type === "real" ? "Comunidad" : "Puntos demo"}</span>
         </div>
-        <button class="play-btn" data-challenge="${c.id}">
+        <button class="play-btn" data-challenge="${escapeHtml(c.id)}">
           ${escapeHtml(c.action || "Ver reto")} <span>›</span>
         </button>
       </div>
@@ -75,6 +67,7 @@ function renderChallenges(filter = "todos") {
 
   $("#statChallenges").textContent = String(list.length);
 }
+
 
 function renderCommunity() {
   const retosAprobados = (window.retoArenaRetosAprobados || []).map(r => ({
