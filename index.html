@@ -88,7 +88,12 @@
       <label>Tu nombre público<input name="creator" required maxlength="30" placeholder="Ej. Alex"></label>
       <label>Enlace del vídeo<input name="url" required type="url" placeholder="https://..." pattern="https?://.+" ></label>
       <label>Descripción<textarea name="description" maxlength="180" placeholder="¿Qué tiene que valorar la comunidad?"></textarea></label>
-      <p class="form-hint">Los retos enviados se guardan solo en este navegador y aparecen como pendientes de revisión en esta demo.</p>
+      
+<p class="form-hint">
+  Tu reto se guardará en RetoArena y quedará pendiente de revisión.
+  Solo se publicará cuando sea aprobado por moderación.
+</p>
+
       <button class="primary-btn full" type="submit">Enviar para revisión ↗</button>
     </form>
     <div id="submitFeedback" class="feedback hidden" role="status"></div>
