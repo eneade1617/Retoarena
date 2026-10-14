@@ -275,8 +275,44 @@ document.addEventListener("retoarena:retos-cargados", (event) => {
     filtroActivo ? filtroActivo.dataset.filter : "todos"
   );
 });
-renderChallenges();renderCommunity();renderLeaderboard();
-window.addEventListener("beforeinstallprompt",e=>{e.preventDefault();deferredInstallPrompt=e;$("#installBtn").classList.remove("hidden")});
-$("#installBtn").addEventListener("click",async()=>{if(!deferredInstallPrompt){toast("En iPhone: abre el menú Compartir de Safari y elige “Añadir a pantalla de inicio”.");return}deferredInstallPrompt.prompt();await deferredInstallPrompt.userChoice;deferredInstallPrompt=null;$("#installBtn").classList.add("hidden")});
-if("serviceWorker" in navigator && location.protocol.startsWith("http"))navigator.serviceWorker.register("./sw.js").catch(()=>{});
-if(/iPhone|iPad|iPod/i.test(navigator.userAgent)&&!window.matchMedia("(display-mode: standalone)").matches){$("#installBtn").classList.remove("hidden");$("#installBtn").addEventListener("click",()=>toast("En Safari: Compartir → Añadir a pantalla de inicio."))}
+
+function renderChallenges(filter = "todos") {
+  // challenges ya contiene los minijuegos originales
+  // y los retos aprobados cargados desde Supabase.
+  const vistos = new Set();
+
+  const todosLosRetos = challenges.filter(c => {
+    const id = String(c.id);
+
+    if (vistos.has(id)) return false;
+
+    vistos.add(id);
+    return true;
+  });
+
+  const list = todosLosRetos.filter(c =>
+    filter === "todos" || c.type === filter
+  );
+
+  $("#challengeGrid").innerHTML = list.map(c => `
+    <article class="challenge-card">
+      <div class="challenge-art ${c.art || ""}">
+        <span class="tag">${c.type === "real" ? "real" : "open"}</span>
+        <span class="emoji">${c.icon || "🎯"}</span>
+      </div>
+      <div class="challenge-body">
+        <h3>${escapeHtml(c.title)}</h3>
+        <p>${escapeHtml(c.desc)}</p>
+        <div class="card-meta">
+          <span>👥 ${c.players || 0}</span>
+          <span>${c.type === "real" ? "Comunidad" : "Puntos demo"}</span>
+        </div>
+        <button class="play-btn" data-challenge="${escapeHtml(c.id)}">
+          ${escapeHtml(c.action || "Ver reto")} <span>›</span>
+        </button>
+      </div>
+    </article>
+  `).join("");
+
+  $("#statChallenges").textContent = String(list.length);
+}
