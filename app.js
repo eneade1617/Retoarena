@@ -72,60 +72,71 @@ function finishQuiz(){
   $("#gameContent").innerHTML=`<span class="game-kicker">FIN DEL RETO</span><h2>¡Bien jugado!</h2><div class="game-result">Has conseguido <strong>${gameState.score} puntos demo</strong> en esta partida. Tu total local es ${points} puntos.<br><br>Estos puntos no tienen valor monetario y no representan un premio.</div><button class="primary-btn full" id="playAgain">Volver a jugar ↻</button>`;
 }
 
+
 function openRealChallenge(id) {
   const c = challenges.find(x => x.id === id);
   if (!c) return;
 
   const esRetoGuardado = String(c.id).startsWith("supabase-");
+  const contenido = $("#gameContent");
+
+  contenido.innerHTML = "";
+
+  const titulo = document.createElement("h2");
+  titulo.textContent = c.title || "Reto de la comunidad";
+  contenido.appendChild(titulo);
+
+  const descripcion = document.createElement("p");
+  descripcion.className = "modal-intro";
+  descripcion.textContent = c.desc || "";
+  contenido.appendChild(descripcion);
 
   if (esRetoGuardado) {
-    let enlaceVideo = "";
+    const mensaje = document.createElement("div");
+    mensaje.className = "game-result";
+    mensaje.textContent = "Este reto está aprobado y publicado en RetoArena.";
+    contenido.appendChild(mensaje);
+
+    let urlValida = "";
 
     try {
       const url = new URL(c.videoUrl || "");
       if (url.protocol === "https:" || url.protocol === "http:") {
-        enlaceVideo = url.href;
+        urlValida = url.href;
       }
     } catch (_) {}
 
-    $("#gameContent").innerHTML = `
-      <span class="game-kicker">RETO REAL · COMUNIDAD</span>
-      <h2>${escapeHtml(c.title)}</h2>
-      <p class="modal-intro">${escapeHtml(c.desc)}</p>
-      <div class="game-result">
-        <strong>Reto aprobado</strong><br>
-        Este reto ya está publicado en RetoArena.
-      </div>
-      ${
-        enlaceVideo
-          ? `<a class="primary-btn full"
-                href="${escapeHtml(enlaceVideo)}"
-                target="_blank"
-                rel="noopener noreferrer">
-                Ver vídeo ↗
-             </a>`
-          : `<p class="form-hint">Este reto todavía no tiene un enlace de vídeo válido.</p>`
-      }
-    `;
+    if (urlValida) {
+      const enlace = document.createElement("a");
+      enlace.className = "primary-btn full";
+      enlace.href = urlValida;
+      enlace.target = "_blank";
+      enlace.rel = "noopener noreferrer";
+      enlace.textContent = "Ver vídeo ↗";
+      contenido.appendChild(enlace);
+    } else {
+      const aviso = document.createElement("p");
+      aviso.className = "form-hint";
+      aviso.textContent = "Este reto todavía no tiene un enlace de vídeo válido.";
+      contenido.appendChild(aviso);
+    }
   } else {
-    $("#gameContent").innerHTML = `
-      <span class="game-kicker">ARENA REAL</span>
-      <h2>${escapeHtml(c.title)}</h2>
-      <p class="modal-intro">${escapeHtml(c.desc)}</p>
-      <div class="game-result">
-        <strong>¿Cómo participar?</strong><br>
-        Prepara un vídeo seguro, publícalo en una plataforma que permita compartirlo y envía el enlace con el botón “Publicar”. En esta versión, los retos se revisan manualmente y no hay premios activos.
-      </div>
-      <button class="primary-btn full" id="fromRealSubmit">
-        Publicar mi reto ↗
-      </button>
-    `;
+    const mensaje = document.createElement("div");
+    mensaje.className = "game-result";
+    mensaje.textContent =
+      "Prepara un vídeo seguro y comparte su enlace. Los retos se revisan manualmente y no hay premios activos.";
+    contenido.appendChild(mensaje);
+
+    const boton = document.createElement("button");
+    boton.className = "primary-btn full";
+    boton.id = "fromRealSubmit";
+    boton.textContent = "Publicar mi reto ↗";
+    contenido.appendChild(boton);
   }
 
   $("#gameDialog").showModal();
-
-
 }
+
 function openMemory(){
   const icons=["🍋","🎧","🚀","🐼","🎯","🌈","🍋","🎧","🚀","🐼","🎯","🌈"];
   let shuffled=icons.map((v,i)=>({v,k:i})).sort(()=>Math.random()-.5), opened=[],matched=0,locked=false;
