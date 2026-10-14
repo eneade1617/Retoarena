@@ -71,10 +71,60 @@ function finishQuiz(){
   points+=gameState.score;localStorage.setItem("retoarena_points",String(points));renderLeaderboard();
   $("#gameContent").innerHTML=`<span class="game-kicker">FIN DEL RETO</span><h2>¡Bien jugado!</h2><div class="game-result">Has conseguido <strong>${gameState.score} puntos demo</strong> en esta partida. Tu total local es ${points} puntos.<br><br>Estos puntos no tienen valor monetario y no representan un premio.</div><button class="primary-btn full" id="playAgain">Volver a jugar ↻</button>`;
 }
-function openRealChallenge(id){
-  const c=challenges.find(x=>x.id===id);
-  $("#gameContent").innerHTML=`<span class="game-kicker">ARENA REAL</span><h2>${c.title}</h2><p class="modal-intro">${c.desc}</p><div class="game-result"><strong>¿Cómo participar?</strong><br>Prepara un vídeo seguro, publícalo en una plataforma que permita compartirlo y envía el enlace con el botón “Publicar”. En esta versión, los retos se revisan manualmente y no hay premios activos.</div><button class="primary-btn full" id="fromRealSubmit">Publicar mi reto ↗</button>`;
+
+function openRealChallenge(id) {
+  const c = challenges.find(x => x.id === id);
+  if (!c) return;
+
+  const esRetoGuardado = String(c.id).startsWith("supabase-");
+
+  if (esRetoGuardado) {
+    let enlaceVideo = "";
+
+    try {
+      const url = new URL(c.videoUrl || "");
+      if (url.protocol === "https:" || url.protocol === "http:") {
+        enlaceVideo = url.href;
+      }
+    } catch (_) {}
+
+    $("#gameContent").innerHTML = `
+      <span class="game-kicker">RETO REAL · COMUNIDAD</span>
+      <h2>${escapeHtml(c.title)}</h2>
+      <p class="modal-intro">${escapeHtml(c.desc)}</p>
+      <div class="game-result">
+        <strong>Reto aprobado</strong><br>
+        Este reto ya está publicado en RetoArena.
+      </div>
+      ${
+        enlaceVideo
+          ? `<a class="primary-btn full"
+                href="${escapeHtml(enlaceVideo)}"
+                target="_blank"
+                rel="noopener noreferrer">
+                Ver vídeo ↗
+             </a>`
+          : `<p class="form-hint">Este reto todavía no tiene un enlace de vídeo válido.</p>`
+      }
+    `;
+  } else {
+    $("#gameContent").innerHTML = `
+      <span class="game-kicker">ARENA REAL</span>
+      <h2>${escapeHtml(c.title)}</h2>
+      <p class="modal-intro">${escapeHtml(c.desc)}</p>
+      <div class="game-result">
+        <strong>¿Cómo participar?</strong><br>
+        Prepara un vídeo seguro, publícalo en una plataforma que permita compartirlo y envía el enlace con el botón “Publicar”. En esta versión, los retos se revisan manualmente y no hay premios activos.
+      </div>
+      <button class="primary-btn full" id="fromRealSubmit">
+        Publicar mi reto ↗
+      </button>
+    `;
+  }
+
   $("#gameDialog").showModal();
+}
+
 }
 function openMemory(){
   const icons=["🍋","🎧","🚀","🐼","🎯","🌈","🍋","🎧","🚀","🐼","🎯","🌈"];
