@@ -93,10 +93,10 @@
       user.user_metadata?.username || user.email?.split("@")[0] || "Jugador"
     ).slice(0, 30);
 
-    const { error } = await db.from("profiles").upsert(
-      { id: user.id, username: name },
-      { onConflict: "id", ignoreDuplicates: true }
-    );
+const { error } = await db.from("profiles").upsert(
+  { id: user.id, username: name },
+  { onConflict: "id" }
+);
 
     if (error) console.warn("Perfil pendiente de crear:", error.message);
   }
