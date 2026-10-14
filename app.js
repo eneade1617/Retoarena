@@ -34,14 +34,48 @@ let deferredInstallPrompt = null;
 
 const $ = (sel) => document.querySelector(sel);
 function toast(message){const el=$("#toast");el.textContent=message;el.classList.add("show");clearTimeout(toast.timer);toast.timer=setTimeout(()=>el.classList.remove("show"),2600)}
-function renderChallenges(filter="todos"){
-  const list=challenges.filter(c=>filter==="todos"||c.type===filter);
-  $("#challengeGrid").innerHTML=list.map(c=>`<article class="challenge-card">
-    <div class="challenge-art ${c.art}"><span class="tag ${c.type==="real"?"real":"open"}">${c.tag}</span><span class="emoji">${c.icon}</span></div>
-    <div class="challenge-body"><h3>${c.title}</h3><p>${c.desc}</p><div class="card-meta"><span>◉ ${c.players}</span><span>${c.type==="real"?"Comunidad":"Puntos demo"}</span></div>
-    <button class="play-btn" data-challenge="${c.id}">${c.action} <span>↗</span></button></div></article>`).join("");
-  $("#statChallenges").textContent=String(challenges.length);
+
+function renderChallenges(filter = "todos") {
+  const retosGuardados = (window.retoArenaRetosAprobados || []).map(r => ({
+    id: "supabase-" + r.id,
+    title: r.title,
+    desc: r.description || "Reto de la comunidad",
+    type: r.category === "real" ? "real" : "juego",
+    tag: "Comunidad",
+    icon: "🎯",
+    players: 0,
+    action: "Ver reto",
+    videoUrl: r.video_url || ""
+  }));
+
+  const todosLosRetos = [...challenges, ...retosGuardados];
+  const list = todosLosRetos.filter(c =>
+    filter === "todos" || c.type === filter
+  );
+
+  $("#challengeGrid").innerHTML = list.map(c => `
+    <article class="challenge-card">
+      <div class="challenge-art ${c.art || ""}">
+        <span class="tag">${c.type === "real" ? "real" : "open"}</span>
+        <span class="emoji">${c.icon || "🎯"}</span>
+      </div>
+      <div class="challenge-body">
+        <h3>${escapeHtml(c.title)}</h3>
+        <p>${escapeHtml(c.desc)}</p>
+        <div class="card-meta">
+          <span>👥 ${c.players || 0}</span>
+          <span>${c.type === "real" ? "Comunidad" : "Puntos demo"}</span>
+        </div>
+        <button class="play-btn" data-challenge="${c.id}">
+          ${escapeHtml(c.action || "Ver reto")} <span>›</span>
+        </button>
+      </div>
+    </article>
+  `).join("");
+
+  $("#statChallenges").textContent = String(list.length);
 }
+
 function renderCommunity(){
   const combined=[...community,...localSubmissions.filter(s=>s.status==="pending").map(s=>({id:s.id,title:s.title,desc:s.description||"Reto enviado para revisión.",creator:s.creator,icon:"🎬",votes:0,pending:true}))];
   $("#communityGrid").innerHTML=combined.map(c=>`<article class="community-card"><div class="community-thumb">${c.icon}</div><div class="community-content"><h3>${escapeHtml(c.title)}</h3><p>${escapeHtml(c.desc)}</p><div class="community-foot"><span class="creator">@${escapeHtml(c.creator)} ${c.pending? "· Pendiente":""}</span><button class="vote-btn" data-vote="${c.id}" ${c.pending?"disabled":""}>♡ ${c.votes+(votes[c.id]||0)} ${votes[c.id]?"· Votado":""}</button></div></div></article>`).join("");
