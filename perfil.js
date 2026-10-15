@@ -17,8 +17,8 @@
   header.insertBefore(profileButton, avatar);
 
   const dialog = document.createElement("dialog");
-  dialog.style.cssText =
-    "max-width:460px;width:calc(100% - 32px);border:1px solid #554078;border-radius:20px;background:#151326;color:white;padding:24px";
+  dialog.className = "profile-dialog";
+  dialog.style.cssText = "max-width:560px;width:calc(100% - 28px);max-height:88vh;overflow:auto";
   dialog.innerHTML = `
     <form method="dialog">
       <button aria-label="Cerrar" style="float:right;background:none;color:white;border:0;font-size:24px;cursor:pointer">×</button>
