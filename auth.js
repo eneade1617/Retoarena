@@ -246,70 +246,8 @@
     }
   });
 
-  // Guardar retos en Supabase, no solo en el navegador.
-  const submitForm = document.querySelector("#submitForm");
-
-  if (submitForm) {
-    submitForm.addEventListener("submit", async (event) => {
-      event.preventDefault();
-      event.stopImmediatePropagation();
-
-      const { data } = await db.auth.getSession();
-      const user = data.session?.user;
-
-      if (!user) {
-        alert("Para publicar un reto, primero entra o crea una cuenta.");
-        setMode("login");
-        if (!dialog.open) dialog.showModal();
-        return;
-      }
-
-      const fd = new FormData(submitForm);
-      const title = String(fd.get("title") || "").trim();
-      const creator = String(fd.get("creator") || "").trim();
-      const videoUrl = String(fd.get("url") || "").trim();
-      const description = String(fd.get("description") || "").trim();
-
-      if (!/^https?:\/\//i.test(videoUrl)) {
-        alert("Introduce un enlace de vídeo válido.");
-        return;
-      }
-
-      const button = submitForm.querySelector('[type="submit"]');
-      button.disabled = true;
-
-      try {
-        const { error } = await db.from("challenges").insert({
-          title,
-          description,
-          category: "real",
-          status: "pending",
-          creator_id: user.id,
-          video_url: videoUrl
-        });
-
-        if (error) throw error;
-
-        submitForm.reset();
-        const feedback = document.querySelector("#submitFeedback");
-        feedback.classList.remove("hidden");
-        feedback.textContent =
-          "Reto enviado correctamente. Queda pendiente de revisión.";
-
-        const creatorField = submitForm.elements.creator;
-        if (creatorField) creatorField.value = creator;
-
-        const submitDialog = document.querySelector("#submitDialog");
-        if (submitDialog?.open) submitDialog.close();
-
-        alert("¡Reto guardado en Supabase!");
-      } catch (error) {
-        alert("No se pudo guardar el reto: " + error.message);
-      } finally {
-        button.disabled = false;
-      }
-    }, true);
-  }
+  // La publicación de retos con archivo de vídeo la gestiona community.js.
+  // No registrar aquí un segundo listener que exija un enlace externo.
 
   db.auth.onAuthStateChange((event) => {
     // El enlace de correo devuelve a esta página en modo recuperación.
