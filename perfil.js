@@ -58,14 +58,84 @@
     </section>
     </div>
   `;
-  document.body.appendChild(dialog);
+  document.body.appendChild(dialog);\n
+  const ownProfileDialog = document.createElement("dialog");
+  ownProfileDialog.id = "ownProfileDialog";
+  ownProfileDialog.className = "own-profile-dialog";
+  ownProfileDialog.innerHTML = `
+    <div class="own-profile-topbar"><button type="button" id="ownProfileClose">‹</button><strong>MI ESPACIO</strong><button type="button" id="ownProfileEdit">Editar perfil</button></div>
+    <div class="own-profile-cover"><span>RETOARENA / CREATOR SPACE</span></div>
+    <section class="own-profile-content">
+      <div class="own-profile-identity"><div class="own-profile-avatar" id="ownProfileAvatar">RA</div><div class="own-profile-idtext"><h1 id="ownProfileName">Tu perfil</h1><p id="ownProfileHandle">@competidor</p><span class="own-profile-tag">◆ COMPETIDOR</span></div></div>
+      <p id="ownProfileBio" class="own-profile-bio"></p>
+      <div class="own-profile-stats"><div><strong id="ownProfilePoints">0</strong><span>PUNTOS</span></div><div><strong id="ownProfilePostCount">0</strong><span>PUBLICACIONES</span></div><div><strong id="ownProfileChallengeCount">0</strong><span>RETOS APROBADOS</span></div></div>
+      <section class="own-profile-publish"><span class="own-profile-overline">TU HISTORIA, EN IMÁGENES</span><h2>Publica un momento</h2><p>Sube varias fotos o vídeos desde tu móvil. Hasta 10 archivos por tanda.</p>
+        <form id="profileMediaForm"><label class="profile-media-picker"><span class="profile-media-icon">＋</span><span><strong>Elegir fotos o vídeos</strong><small>JPG, PNG, WebP, MP4, MOV o WebM</small></span><input id="profileMediaFiles" type="file" accept="image/jpeg,image/png,image/webp,video/mp4,video/quicktime,video/webm" multiple></label>
+        <div id="profileMediaSelection" class="profile-media-selection">No has seleccionado archivos todavía.</div>
+        <label class="profile-caption-label">Descripción (opcional)<textarea id="profileMediaCaption" maxlength="500" rows="2" placeholder="¿Qué está pasando en este momento?"></textarea></label>
+        <button id="profileMediaSubmit" class="profile-media-submit" type="submit">Publicar en mi perfil ↗</button><p id="profileMediaFeedback" role="status" class="profile-media-feedback"></p></form>
+      </section>
+      <div class="own-profile-gallery-head"><div><span class="own-profile-overline">TU CONTENIDO</span><h2>Mis publicaciones</h2></div><span id="ownProfileGalleryCount">0 posts</span></div>
+      <div class="own-profile-tabs"><button type="button" class="active" data-profile-filter="all">Todo</button><button type="button" data-profile-filter="image">Fotos</button><button type="button" data-profile-filter="video">Vídeos</button></div>
+      <div id="ownProfileGallery" class="own-profile-gallery"></div>
+    </section>`;
+  document.body.appendChild(ownProfileDialog);
+
 
   const form = dialog.querySelector("#profileForm");
   const feedback = dialog.querySelector("#profileFeedback");
   const preview = dialog.querySelector("#profilePreview");
-  let activeUser = null;
+  let activeUser = null;\n  let ownProfileData = null;\n  let ownProfilePosts = [];\n  let ownProfileFilter = "all";
 
-  function renderPreview(profile) {
+
+  function renderOwnProfile() {
+    const profile=ownProfileData||{}, name=profile.display_name||profile.username||activeUser?.email?.split("@")[0]||"Competidor";
+    const url=safeImageUrl(profile.avatar_url||""), av=ownProfileDialog.querySelector("#ownProfileAvatar");
+    av.textContent=url?"":name.slice(0,2).toUpperCase(); av.style.backgroundImage=url?'url("'+url.replace(/["\\\\]/g,"")+'")':""; av.style.backgroundSize="cover"; av.style.backgroundPosition="center";
+    ownProfileDialog.querySelector("#ownProfileName").textContent=name;
+    ownProfileDialog.querySelector("#ownProfileHandle").textContent="@"+(profile.username||"competidor");
+    ownProfileDialog.querySelector("#ownProfileBio").textContent=profile.bio||"Este es tu espacio. Cuéntale a la comunidad quién eres y qué retos te mueven.";
+    ownProfileDialog.querySelector("#ownProfilePoints").textContent=Number(profile.points||0).toLocaleString("es-ES");
+    ownProfileDialog.querySelector("#ownProfilePostCount").textContent=String(ownProfilePosts.length);
+    ownProfileDialog.querySelector("#ownProfileGalleryCount").textContent=ownProfilePosts.length+(ownProfilePosts.length===1?" publicación":" publicaciones");
+  }
+  function renderOwnGallery() {
+    const gallery=ownProfileDialog.querySelector("#ownProfileGallery"), posts=ownProfilePosts.filter(p=>ownProfileFilter==="all"||p.media_type===ownProfileFilter);
+    ownProfileDialog.querySelectorAll("[data-profile-filter]").forEach(b=>b.classList.toggle("active",b.dataset.profileFilter===ownProfileFilter));
+    if(!posts.length){gallery.innerHTML='<div class="own-profile-empty"><span>✦</span><strong>'+(ownProfileFilter==="image"?"Aún no hay fotos":ownProfileFilter==="video"?"Aún no hay vídeos":"Tu historia empieza aquí")+'</strong><p>Publica tu primera foto o vídeo y construye tu perfil.</p></div>';return;}
+    gallery.innerHTML=posts.map(p=>{const url=safeImageUrl(p.media_url||""),cap=String(p.caption||"");const media=p.media_type==="video"?'<video src="'+url+'" controls playsinline preload="metadata"></video>':'<img src="'+url+'" loading="lazy" alt="">';return '<article class="own-profile-post">'+media+'<div class="own-profile-post-meta"><p>'+cap.replace(/[&<>"]/g,"")+'</p><span>'+new Date(p.created_at).toLocaleDateString("es-ES",{day:"2-digit",month:"short"})+'</span><button type="button" data-delete-profile-post="'+p.id+'">Eliminar</button></div></article>';}).join("");
+  }
+  async function loadOwnProfilePage() {
+    const {data:session}=await db.auth.getSession();activeUser=session.session?.user||null;if(!activeUser)return;
+    const [pr,po,ch]=await Promise.all([
+      db.from("profiles").select("id,username,display_name,bio,avatar_url,points").eq("id",activeUser.id).maybeSingle(),
+      db.from("profile_posts").select("id,media_url,media_type,caption,created_at").eq("user_id",activeUser.id).eq("status","published").order("created_at",{ascending:false}).limit(100),
+      db.from("challenges").select("id",{count:"exact",head:true}).eq("creator_id",activeUser.id).eq("status","approved")
+    ]);
+    if(pr.error)throw pr.error;if(po.error)throw po.error;ownProfileData=pr.data||{};ownProfilePosts=po.data||[];
+    ownProfileDialog.querySelector("#ownProfileChallengeCount").textContent=String(ch.count||0);renderOwnProfile();renderOwnGallery();
+  }
+  ownProfileDialog.querySelector("#ownProfileClose").addEventListener("click",()=>ownProfileDialog.close());
+  ownProfileDialog.querySelector("#ownProfileEdit").addEventListener("click",async()=>{await loadProfile();dialog.showModal();});
+  ownProfileDialog.querySelectorAll("[data-profile-filter]").forEach(b=>b.addEventListener("click",()=>{ownProfileFilter=b.dataset.profileFilter;renderOwnGallery();}));
+  ownProfileDialog.querySelector("#profileMediaFiles").addEventListener("change",e=>{const fs=Array.from(e.target.files||[]);ownProfileDialog.querySelector("#profileMediaSelection").textContent=fs.length?fs.map(f=>f.name).join(" · "):"No has seleccionado archivos todavía.";});
+  ownProfileDialog.querySelector("#profileMediaForm").addEventListener("submit",async e=>{
+    e.preventDefault();const feedback=ownProfileDialog.querySelector("#profileMediaFeedback"),btn=ownProfileDialog.querySelector("#profileMediaSubmit"),files=Array.from(ownProfileDialog.querySelector("#profileMediaFiles").files||[]),caption=ownProfileDialog.querySelector("#profileMediaCaption").value.trim();
+    const allowed=["image/jpeg","image/png","image/webp","video/mp4","video/quicktime","video/webm"];
+    if(!files.length){feedback.textContent="Elige al menos una foto o un vídeo.";return;}if(files.length>10){feedback.textContent="Puedes subir un máximo de 10 archivos a la vez.";return;}
+    for(const f of files){if(!allowed.includes(f.type)){feedback.textContent="Formato no admitido: "+f.name;return;}if(f.size>(f.type.startsWith("video/")?50:8)*1024*1024){feedback.textContent=f.name+" supera el límite de tamaño.";return;}}
+    const {data:session}=await db.auth.getSession();activeUser=session.session?.user||null;if(!activeUser){feedback.textContent="Inicia sesión para publicar.";return;}
+    btn.disabled=true;ownProfileDialog.querySelector("#profileMediaFiles").disabled=true;let count=0;
+    try{for(const f of files){feedback.textContent="Subiendo "+(count+1)+" de "+files.length+"…";const ext=f.name.includes(".")?f.name.split(".").pop().toLowerCase().replace(/[^a-z0-9]/g,""):f.type.split("/")[1];const path=activeUser.id+"/"+Date.now()+"-"+Math.random().toString(36).slice(2,9)+"."+ext;
+      const {error:uploadError}=await db.storage.from("retoarena-media").upload(path,f,{upsert:false,contentType:f.type,cacheControl:"3600"});if(uploadError)throw uploadError;
+      const {data:pub}=db.storage.from("retoarena-media").getPublicUrl(path);
+      const {error:insertError}=await db.from("profile_posts").insert({user_id:activeUser.id,media_url:pub.publicUrl,media_type:f.type.startsWith("video/")?"video":"image",caption:caption||null,status:"published"});if(insertError)throw insertError;count++;}
+      ownProfileDialog.querySelector("#profileMediaFiles").value="";ownProfileDialog.querySelector("#profileMediaCaption").value="";ownProfileDialog.querySelector("#profileMediaSelection").textContent="No has seleccionado archivos todavía.";feedback.textContent="¡Publicado! "+count+(count===1?" archivo añadido.":" archivos añadidos.");await loadOwnProfilePage();
+    }catch(err){feedback.textContent="Se han publicado "+count+" de "+files.length+". "+(err.message||"No se pudo completar la subida.");}
+    finally{btn.disabled=false;ownProfileDialog.querySelector("#profileMediaFiles").disabled=false;}
+  });
+  ownProfileDialog.addEventListener("click",async e=>{const b=e.target.closest("[data-delete-profile-post]");if(!b)return;const post=ownProfilePosts.find(p=>p.id===b.dataset.deleteProfilePost);if(!post||!confirm("¿Eliminar esta publicación de tu perfil?"))return;b.disabled=true;try{const {error}=await db.from("profile_posts").delete().eq("id",post.id).eq("user_id",activeUser.id);if(error)throw error;await loadOwnProfilePage();}catch(err){alert("No se pudo eliminar: "+(err.message||"error desconocido"));b.disabled=false;}});
+\n  function renderPreview(profile) {
     preview.style.display = "block";
     const displayName = profile.display_name || profile.username || "Jugador de RetoArena";
     dialog.querySelector("#profilePreviewName").textContent = displayName;
@@ -144,12 +214,9 @@
 
   profileButton.addEventListener("click", async () => {
     await loadProfile();
-    if (!activeUser) {
-      alert("Primero entra o crea tu cuenta con el botón Entrar.");
-      return;
-    }
-    feedback.textContent = "";
-    dialog.showModal();
+    if (!activeUser) { alert("Primero entra o crea tu cuenta con el botón Entrar."); return; }
+    try { await loadOwnProfilePage(); ownProfileDialog.showModal(); }
+    catch (error) { alert("No se pudo abrir tu perfil: " + (error.message || "error desconocido")); }
   });
 
   form.addEventListener("submit", async (event) => {
