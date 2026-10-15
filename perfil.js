@@ -58,7 +58,8 @@
     </section>
     </div>
   `;
-  document.body.appendChild(dialog);\n
+  document.body.appendChild(dialog);
+
   const ownProfileDialog = document.createElement("dialog");
   ownProfileDialog.id = "ownProfileDialog";
   ownProfileDialog.className = "own-profile-dialog";
@@ -85,7 +86,10 @@
   const form = dialog.querySelector("#profileForm");
   const feedback = dialog.querySelector("#profileFeedback");
   const preview = dialog.querySelector("#profilePreview");
-  let activeUser = null;\n  let ownProfileData = null;\n  let ownProfilePosts = [];\n  let ownProfileFilter = "all";
+  let activeUser = null;
+  let ownProfileData = null;
+  let ownProfilePosts = [];
+  let ownProfileFilter = "all";
 
 
   function renderOwnProfile() {
@@ -135,7 +139,8 @@
     finally{btn.disabled=false;ownProfileDialog.querySelector("#profileMediaFiles").disabled=false;}
   });
   ownProfileDialog.addEventListener("click",async e=>{const b=e.target.closest("[data-delete-profile-post]");if(!b)return;const post=ownProfilePosts.find(p=>p.id===b.dataset.deleteProfilePost);if(!post||!confirm("¿Eliminar esta publicación de tu perfil?"))return;b.disabled=true;try{const {error}=await db.from("profile_posts").delete().eq("id",post.id).eq("user_id",activeUser.id);if(error)throw error;await loadOwnProfilePage();}catch(err){alert("No se pudo eliminar: "+(err.message||"error desconocido"));b.disabled=false;}});
-\n  function renderPreview(profile) {
+
+  function renderPreview(profile) {
     preview.style.display = "block";
     const displayName = profile.display_name || profile.username || "Jugador de RetoArena";
     dialog.querySelector("#profilePreviewName").textContent = displayName;
