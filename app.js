@@ -116,8 +116,23 @@ function renderLeaderboard(){
   $("#leaderboard").innerHTML=list.slice(0,10).map((p,i)=>`<div class="leader-row"><span class="rank ${i===0?"gold":""}">${String(i+1).padStart(2,"0")}</span><div class="player"><span class="player-avatar">${escapeHtml(p.initials || (p.name || "J").slice(0,2).toUpperCase())}</span><span><b>${escapeHtml(p.name)}</b><small>${escapeHtml(p.label || "Participante")}</small></span></div><span class="points">${Number(p.points||0).toLocaleString("es-ES")} <small>pts</small></span></div>`).join("");
 }
 function escapeHtml(s){return String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
-function startQuiz(){
-  gameState={index:0,score:0,answered:false}; showQuestion();
+async function startQuiz(){
+  const db = window.retoArenaSupabase;
+  if (!db) { toast("No se pudo conectar con el sistema de puntos."); return; }
+  const { data: sessionData, error: sessionError } = await db.auth.getSession();
+  if (sessionError || !sessionData.session?.user) {
+    toast("Inicia sesión para jugar y ganar puntos reales.");
+    $("#accountBtn")?.click();
+    return;
+  }
+  const { data: gameSessionId, error } = await db.rpc("retoarena_start_quiz");
+  if (error || !gameSessionId) {
+    console.error("RetoArena: no se pudo iniciar la partida:", error?.message);
+    toast("No se pudo iniciar la partida. Inténtalo de nuevo.");
+    return;
+  }
+  gameState={index:0,score:0,answered:false,sessionId:gameSessionId,pointsAwarded:0,pointsTotal:null};
+  showQuestion();
   $("#gameDialog").showModal();
 }
 function showQuestion(){
@@ -125,15 +140,38 @@ function showQuestion(){
   const q=questions[gameState.index];
   $("#gameContent").innerHTML=`<span class="game-kicker">ARENA DIGITAL · PREGUNTA ${gameState.index+1}/${questions.length}</span><h2>Duelo de cultura general</h2><div class="game-question">${q.q}</div><div class="answer-list">${q.a.map((a,i)=>`<button class="answer-btn" data-answer="${i}">${String.fromCharCode(65+i)}. ${a}</button>`).join("")}</div><div id="answerFeedback"></div><p class="form-hint">Modo demostración: los puntos se guardan solo en este dispositivo.</p>`;
 }
-function answerQuestion(index){
-  if(gameState.answered)return; gameState.answered=true;
-  const q=questions[gameState.index];const correct=index===q.correct;if(correct)gameState.score+=100;
-  document.querySelectorAll("[data-answer]").forEach((b,i)=>{b.disabled=true;if(i===q.correct)b.classList.add("correct");else if(i===index)b.classList.add("wrong")});
-  $("#answerFeedback").innerHTML=`<div class="game-result">${correct?"✅ ¡Correcto! +100 puntos":"💡 No pasa nada."} ${q.fact}<br><button class="primary-btn full" id="nextQuestion">${gameState.index===questions.length-1?"Ver resultado":"Siguiente pregunta"} ↗</button></div>`;
+async function answerQuestion(index){
+  if(gameState.answered)return;
+  gameState.answered=true;
+  document.querySelectorAll("[data-answer]").forEach(b=>b.disabled=true);
+  const db = window.retoArenaSupabase;
+  const { data, error } = await db.rpc("retoarena_submit_quiz_answer", {
+    p_session_id: gameState.sessionId,
+    p_question_index: gameState.index,
+    p_answer_index: index
+  });
+  if(error || !data){
+    console.error("RetoArena: error validando respuesta:", error?.message);
+    $("#answerFeedback").innerHTML='<div class="game-result">No se pudo validar la respuesta. Cierra esta partida e inténtalo de nuevo.</div>';
+    return;
+  }
+  const q=questions[gameState.index];
+  const correct=Boolean(data.correct);
+  if(correct)gameState.score+=1;
+  if(data.completed){
+    gameState.pointsAwarded=Number(data.points_awarded||0);
+    gameState.pointsTotal=Number(data.points_total||0);
+  }
+  document.querySelectorAll("[data-answer]").forEach((b,i)=>{
+    if(i===q.correct)b.classList.add("correct");
+    else if(i===index)b.classList.add("wrong");
+  });
+  $("#answerFeedback").innerHTML=`<div class="game-result">${correct?"✅ ¡Correcto!":"💡 No pasa nada."} ${q.fact}<br><button class="primary-btn full" id="nextQuestion">${gameState.index===questions.length-1?"Ver resultado":"Siguiente pregunta"} ↗</button></div>`;
 }
 function finishQuiz(){
-  points+=gameState.score;localStorage.setItem("retoarena_points",String(points));renderLeaderboard();
-  $("#gameContent").innerHTML=`<span class="game-kicker">FIN DEL RETO</span><h2>¡Bien jugado!</h2><div class="game-result">Has conseguido <strong>${gameState.score} puntos demo</strong> en esta partida. Tu total local es ${points} puntos.<br><br>Estos puntos no tienen valor monetario y no representan un premio.</div><button class="primary-btn full" id="playAgain">Volver a jugar ↻</button>`;
+  const awarded=Number(gameState.pointsAwarded||0);
+  const total=gameState.pointsTotal===null?"actualiza tu perfil":Number(gameState.pointsTotal).toLocaleString("es-ES")+" puntos";
+  $("#gameContent").innerHTML=`<span class="game-kicker">FIN DEL RETO</span><h2>¡Bien jugado!</h2><div class="game-result">Has acertado <strong>${gameState.score} de 5 preguntas</strong>.<br>Has ganado <strong>${awarded} puntos reales</strong> en esta partida.<br>Tu total en Supabase: <strong>${total}</strong>.<br><br>Los puntos se validan en el servidor y se guardan en tu perfil.</div><button class="primary-btn full" id="playAgain">Volver a jugar ↻</button>`;
 }
 
 
