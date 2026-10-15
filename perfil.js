@@ -120,6 +120,7 @@
     if(pr.error)throw pr.error;if(po.error)throw po.error;ownProfileData=pr.data||{};ownProfilePosts=po.data||[];
     ownProfileDialog.querySelector("#ownProfileChallengeCount").textContent=String(ch.count||0);renderOwnProfile();renderOwnGallery();
   }
+  ownProfileDialog.addEventListener("click",event=>{const btn=event.target.closest("[data-open-profile-post]");if(!btn)return;const postId=btn.getAttribute("data-open-profile-post");if(postId&&typeof window.retoArenaOpenPost==="function"){ownProfileDialog.close();window.retoArenaOpenPost(postId);}});
   ownProfileDialog.querySelector("#ownProfileClose").addEventListener("click",()=>ownProfileDialog.close());
   ownProfileDialog.querySelector("#ownProfileEdit").addEventListener("click",async()=>{await loadProfile();dialog.showModal();});
   ownProfileDialog.querySelectorAll("[data-profile-filter]").forEach(b=>b.addEventListener("click",()=>{ownProfileFilter=b.dataset.profileFilter;renderOwnGallery();}));
