@@ -70,7 +70,7 @@
       <div class="own-profile-identity"><div class="own-profile-avatar" id="ownProfileAvatar">RA</div><div class="own-profile-idtext"><h1 id="ownProfileName">Tu perfil</h1><p id="ownProfileHandle">@competidor</p><span class="own-profile-tag">◆ COMPETIDOR</span></div></div>
       <p id="ownProfileBio" class="own-profile-bio"></p>
       <div class="own-profile-stats"><div><strong id="ownProfilePoints">0</strong><span>PUNTOS</span></div><div><strong id="ownProfilePostCount">0</strong><span>PUBLICACIONES</span></div><div><strong id="ownProfileChallengeCount">0</strong><span>RETOS APROBADOS</span></div></div>
-      <section class="own-profile-publish"><span class="own-profile-overline">TU HISTORIA, EN IMÁGENES</span><h2>Publica un momento</h2><p>Sube varias fotos o vídeos desde tu móvil. Hasta 10 archivos por tanda.</p>
+      <section class="own-profile-publish"><span class="own-profile-overline">TU HISTORIA, EN IMÁGENES</span><h2>Publica un momento</h2><p>Sube fotos y vídeos desde tu móvil. Para cuidar el espacio gratuito, hasta 5 archivos por tanda, 5 MB por foto y 25 MB por vídeo.</p>
         <form id="profileMediaForm"><label class="profile-media-picker"><span class="profile-media-icon">＋</span><span><strong>Elegir fotos o vídeos</strong><small>JPG, PNG, WebP, MP4, MOV o WebM</small></span><input id="profileMediaFiles" type="file" accept="image/jpeg,image/png,image/webp,video/mp4,video/quicktime,video/webm" multiple></label>
         <div id="profileMediaSelection" class="profile-media-selection">No has seleccionado archivos todavía.</div>
         <label class="profile-caption-label">Descripción (opcional)<textarea id="profileMediaCaption" maxlength="500" rows="2" placeholder="¿Qué está pasando en este momento?"></textarea></label>
@@ -128,8 +128,8 @@
   ownProfileDialog.querySelector("#profileMediaForm").addEventListener("submit",async e=>{
     e.preventDefault();const feedback=ownProfileDialog.querySelector("#profileMediaFeedback"),btn=ownProfileDialog.querySelector("#profileMediaSubmit"),files=Array.from(ownProfileDialog.querySelector("#profileMediaFiles").files||[]),caption=ownProfileDialog.querySelector("#profileMediaCaption").value.trim();
     const allowed=["image/jpeg","image/png","image/webp","video/mp4","video/quicktime","video/webm"];
-    if(!files.length){feedback.textContent="Elige al menos una foto o un vídeo.";return;}if(files.length>10){feedback.textContent="Puedes subir un máximo de 10 archivos a la vez.";return;}
-    for(const f of files){if(!allowed.includes(f.type)){feedback.textContent="Formato no admitido: "+f.name;return;}if(f.size>(f.type.startsWith("video/")?50:8)*1024*1024){feedback.textContent=f.name+" supera el límite de tamaño.";return;}}
+    if(!files.length){feedback.textContent="Elige al menos una foto o un vídeo.";return;}if(files.length>5){feedback.textContent="Puedes subir un máximo de 5 archivos por tanda para cuidar el espacio gratuito.";return;}
+    for(const f of files){if(!allowed.includes(f.type)){feedback.textContent="Formato no admitido: "+f.name;return;}if(f.size>(f.type.startsWith("video/")?25:5)*1024*1024){feedback.textContent=f.name+(f.type.startsWith("video/")?" supera el límite de 25 MB por vídeo.":" supera el límite de 5 MB por foto.");return;}}
     const {data:session}=await db.auth.getSession();activeUser=session.session?.user||null;if(!activeUser){feedback.textContent="Inicia sesión para publicar.";return;}
     btn.disabled=true;ownProfileDialog.querySelector("#profileMediaFiles").disabled=true;let count=0;
     try{for(const f of files){feedback.textContent="Subiendo "+(count+1)+" de "+files.length+"…";const ext=f.name.includes(".")?f.name.split(".").pop().toLowerCase().replace(/[^a-z0-9]/g,""):f.type.split("/")[1];const path=activeUser.id+"/"+Date.now()+"-"+Math.random().toString(36).slice(2,9)+"."+ext;
