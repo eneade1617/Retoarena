@@ -170,6 +170,42 @@
       feedVideos.forEach(video => window.retoArenaVideoObserver.observe(video));
     }
 
+    // Deslizamiento explícito sobre el vídeo para pasar al siguiente/anterior elemento.
+    // El scroll normal sigue disponible cuando el gesto empieza fuera del vídeo.
+    if (!feedScroller.dataset.swipeReady) {
+      feedScroller.dataset.swipeReady = "1";
+      let touchStartX = 0, touchStartY = 0, touchStartCard = null, touchStartedOnVideo = false;
+      feedScroller.addEventListener("touchstart", event => {
+        const touch = event.changedTouches[0];
+        touchStartX = touch.clientX;
+        touchStartY = touch.clientY;
+        const video = event.target.closest("video");
+        touchStartedOnVideo = Boolean(video);
+        touchStartCard = event.target.closest(".discovery-post");
+      }, {passive:true});
+      feedScroller.addEventListener("touchend", event => {
+        if (!touchStartedOnVideo || !touchStartCard) return;
+        const touch = event.changedTouches[0];
+        const deltaY = touch.clientY - touchStartY;
+        const deltaX = touch.clientX - touchStartX;
+        if (Math.abs(deltaY) < 55 || Math.abs(deltaY) < Math.abs(deltaX) * 1.15) return;
+        const cards = [...target.querySelectorAll(".discovery-post")];
+        const index = cards.indexOf(touchStartCard);
+        const next = deltaY < 0 ? cards[index + 1] : cards[index - 1];
+        if (next) {
+          next.scrollIntoView({behavior:"smooth",block:"start"});
+          const nextVideo = next.querySelector("video");
+          if (nextVideo) {
+            feedVideos.forEach(video => { if (video !== nextVideo) video.pause(); });
+            nextVideo.muted = true;
+            nextVideo.play().catch(() => {});
+          }
+        }
+        touchStartCard = null;
+        touchStartedOnVideo = false;
+      }, {passive:true});
+    }
+
     if (focusPostId) {
       const focused = [...target.querySelectorAll("[data-discovery-post], [data-discovery-challenge]")].find(card => card.dataset.discoveryPost === String(focusPostId) || card.dataset.discoveryChallenge === String(focusPostId));
       if (focused) {
