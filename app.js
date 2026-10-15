@@ -156,7 +156,7 @@ function showQuestion(){
     if(remaining<=5 && text)text.classList.add("urgent");
   };
   updateTimer();
-  quizTimerInterval=setInterval(()=>{remaining--;updateTimer();if(remaining<=0)stopQuizTimer()},1000);
+  quizTimerInterval=setInterval(()=>{remaining--;updateTimer();if(remaining<=0){clearInterval(quizTimerInterval);quizTimerInterval=null}},1000);
   quizTimeoutHandle=setTimeout(()=>{if(!gameState.answered)answerQuestion(-1)},20000);
 }
 async function answerQuestion(index){
