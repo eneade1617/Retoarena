@@ -217,3 +217,28 @@ body{background:radial-gradient(ellipse at 50% -18%,#4d155e 0,transparent 42%),r
   .battle-preview-grid{gap:8px}
 }
 @media(min-width:701px){.hero{margin-top:22px}.hero-art{min-width:0}}
+
+
+/* SOCIAL EXPERIENCE V14 */
+.hero{grid-template-columns:1.15fr .85fr}
+.hero h1{text-wrap:balance}
+.hero .eyebrow{letter-spacing:1.25px}
+.hero .primary-btn{font-size:12px}
+.arena-live-head p{max-width:640px}
+#challenges .section-heading h2{max-width:500px}
+.split-section .section-heading h2{max-width:620px}
+#communityGrid .community-card{min-height:150px;align-items:center}
+#communityGrid .community-thumb{width:92px;min-width:92px;height:112px;border-radius:12px;background:linear-gradient(145deg,#35162e,#17162d);border:1px solid #ff4f9b2a}
+#communityGrid .community-content h3{font-size:14px}
+#publicProfileDialog,.profile-dialog{max-width:560px;width:calc(100% - 28px);max-height:88vh;overflow:auto;border:1px solid #ff4f9b66;border-radius:18px;background:linear-gradient(145deg,#171020,#0c0e1b);color:#f7f4ff;padding:24px;box-shadow:0 25px 100px #000b}
+#publicProfileDialog::backdrop,.profile-dialog::backdrop{background:#05040bd9;backdrop-filter:blur(8px)}
+.profile-dialog h2{font-size:25px;letter-spacing:-.8px}
+.profile-dialog label{color:#ddd4ed}
+.profile-dialog input,.profile-dialog textarea{font:inherit;max-width:100%}
+@media(max-width:700px){
+ .hero h1{font-size:clamp(37px,10vw,51px)}
+ .hero .eyebrow{max-width:100%;font-size:8px;letter-spacing:.9px}
+ .hero .primary-btn{font-size:11px}
+ #communityGrid .community-card{min-height:130px}
+ #communityGrid .community-thumb{width:70px;min-width:70px;height:92px}
+}
