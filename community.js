@@ -71,7 +71,7 @@
       '<p class="public-profile-bio">' + esc(bio) + '</p>' +
       '<div class="public-profile-stats"><div class="public-profile-stat"><strong>' + Number(profile.points || 0).toLocaleString("es-ES") +
       '</strong><span>Puntos</span></div><div class="public-profile-stat"><strong id="profilePostCount">—</strong><span>Retos publicados</span></div><div class="public-profile-stat"><strong>RA</strong><span>Miembro</span></div></div>' +
-      '<div class="public-profile-posts-title"><strong>Su zona de retos</strong><span style="font-size:10px;color:#aaa3c1;letter-spacing:1px">PUBLICACIONES</span></div>' +
+      '<div class="public-profile-posts-title"><strong>Publicaciones y retos</strong><span style="font-size:10px;color:#aaa3c1;letter-spacing:1px">PUBLICACIONES</span></div>' +
       '<div id="profileChallenges" class="public-profile-posts"><p style="color:var(--muted)">Cargando publicaciones…</p></div></div>';
     if (!profileDialog.open) profileDialog.showModal();
     const target = $("#profileChallenges", details);
