@@ -1,15 +1,15 @@
-const CACHE = "retoarena-v25";
+const CACHE = "retoarena-v26";
 const APP_SHELL = [
   "./",
   "./index.html",
-  "./styles.css?v=25",
-  "./app.js?v=25",
+  "./styles.css?v=26",
+  "./app.js?v=26",
   "./supabase-config.js",
-  "./auth.js?v=25",
-  "./perfil.js?v=25",
-  "./retos-supabase.js?v=25",
-  "./community.js?v=25",
-  "./direct-challenges.js?v=25",
+  "./auth.js?v=26",
+  "./perfil.js?v=26",
+  "./retos-supabase.js?v=26",
+  "./community.js?v=26",
+  "./direct-challenges.js?v=26",
   "./manifest.webmanifest",
   "./icon.svg"
 ];
