@@ -19,13 +19,8 @@ const community = [
   {id:"c3",title:"Imita una voz famosa",desc:"Adivina el personaje en los comentarios.",creator:"VozMisteriosa",icon:"🎭",votes:11},
   {id:"c4",title:"Construcción imposible",desc:"La torre más alta usando solo papel.",creator:"PapelPro",icon:"🗼",votes:9}
 ];
-const players = [
-  {name:"LunaPixel", initials:"LP", points:1480, label:"Racha de 4 días"},
-  {name:"AlexReto", initials:"AR", points:1260, label:"Jugador versátil"},
-  {name:"NereaCrea", initials:"NC", points:990, label:"Creadora"},
-  {name:"Leo_10", initials:"L10", points:870, label:"En racha"},
-  {name:"PixelMarta", initials:"PM", points:740, label:"Exploradora"}
-];
+// No mostramos participantes ficticios en el ranking. La comunidad real se carga desde Supabase.
+const players = [];
 let votes = JSON.parse(localStorage.getItem("retoarena_votes") || "{}");
 let localSubmissions = JSON.parse(localStorage.getItem("retoarena_submissions") || "[]");
 let points = Number(localStorage.getItem("retoarena_points") || "0");
@@ -113,9 +108,14 @@ function renderCommunity() {
   ).join("");
 }
 function renderLeaderboard(){
-  const list=[...players]; if(points>0)list.push({name:"Tú (demo)",initials:"TÚ",points,label:"Tu puntuación local"});
+  const list=[...players];
+  if(points>0)list.push({name:"Tú (demo)",initials:"TÚ",points,label:"Puntuación local de demostración"});
   list.sort((a,b)=>b.points-a.points);
-  $("#leaderboard").innerHTML=list.slice(0,6).map((p,i)=>`<div class="leader-row"><span class="rank ${i===0?"gold":""}">${String(i+1).padStart(2,"0")}</span><div class="player"><span class="player-avatar">${p.initials}</span><span><b>${p.name}</b><small>${p.label}</small></span></div><span class="points">${p.points.toLocaleString("es-ES")} <small>pts</small></span></div>`).join("");
+  if(!list.length){
+    $("#leaderboard").innerHTML='<p style="color:var(--muted);font-size:13px;padding:12px 0">Todavía no hay puntuaciones competitivas. Los puntos de los minijuegos son de demostración y no cuentan para el ranking.</p>';
+    return;
+  }
+  $("#leaderboard").innerHTML=list.slice(0,10).map((p,i)=>`<div class="leader-row"><span class="rank ${i===0?"gold":""}">${String(i+1).padStart(2,"0")}</span><div class="player"><span class="player-avatar">${escapeHtml(p.initials || (p.name || "J").slice(0,2).toUpperCase())}</span><span><b>${escapeHtml(p.name)}</b><small>${escapeHtml(p.label || "Participante")}</small></span></div><span class="points">${Number(p.points||0).toLocaleString("es-ES")} <small>pts</small></span></div>`).join("");
 }
 function escapeHtml(s){return String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
 function startQuiz(){
