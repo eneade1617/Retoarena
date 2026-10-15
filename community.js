@@ -103,11 +103,37 @@
       const avatar = avatarUrl ? '<img src="' + esc(avatarUrl) + '" alt="" loading="lazy">' : '<span>' + esc(name.slice(0,2).toUpperCase()) + '</span>';
       const mediaUrl = safeUrl(post.media_url || "");
       const media = post.media_type === "video"
-        ? '<video src="' + esc(mediaUrl) + '" controls playsinline preload="metadata"></video>'
+        ? '<video src="' + esc(mediaUrl) + '" controls muted playsinline loop preload="metadata"></video>'
         : '<img src="' + esc(mediaUrl) + '" loading="lazy" alt="Publicación de ' + esc(name) + '">';
       return '<article class="discovery-post" data-discovery-post="' + esc(post.id) + '" data-discovery-user="' + esc(post.user_id) + '"><div class="discovery-post-author"><div class="discovery-post-avatar">' + avatar + '</div><div class="discovery-post-author-copy"><strong>' + esc(name) + '</strong><span>@' + esc(profile.username || "competidor") + ' · ' + Number(profile.points || 0).toLocaleString("es-ES") + ' pts</span></div><span class="discovery-post-badge">' + (post.media_type === "video" ? '▶ VÍDEO' : '✦ FOTO') + '</span></div><div class="discovery-post-media">' + media + '</div><div class="discovery-post-caption">' + (post.caption ? '<p>' + esc(post.caption) + '</p>' : '<p class="discovery-no-caption">Un nuevo momento en la arena.</p>') + '<span>' + new Date(post.created_at).toLocaleDateString("es-ES",{day:"2-digit",month:"short",year:"numeric"}) + '</span></div><button type="button" class="discovery-open-profile" data-open-profile="' + esc(post.user_id) + '">VER PERFIL DEL COMPETIDOR ↗</button></article>';
     }).join("");
     await decorateSocialFeed(target, rows);
+
+    // Feed vertical: reproducir solo el vídeo que está a la vista y pausar los demás.
+    const feedScroller = $("#discoveryFeedDialog .discovery-feed-body");
+    const feedVideos = [...target.querySelectorAll("video")];
+    feedVideos.forEach(video => {
+      video.muted = true;
+      video.playsInline = true;
+      video.pause();
+      video.currentTime = 0;
+    });
+    if (feedScroller && "IntersectionObserver" in window) {
+      if (window.retoArenaVideoObserver) window.retoArenaVideoObserver.disconnect();
+      window.retoArenaVideoObserver = new IntersectionObserver(entries => {
+        entries.forEach(entry => {
+          const video = entry.target;
+          if (entry.isIntersecting && entry.intersectionRatio >= 0.65) {
+            feedVideos.forEach(other => { if (other !== video) other.pause(); });
+            video.play().catch(() => {});
+          } else {
+            video.pause();
+          }
+        });
+      }, { root: feedScroller, threshold: [0, 0.35, 0.65, 0.9] });
+      feedVideos.forEach(video => window.retoArenaVideoObserver.observe(video));
+    }
+
     if (focusPostId) {
       const focused = [...target.querySelectorAll("[data-discovery-post]")].find(card => card.dataset.discoveryPost === String(focusPostId));
       if (focused) {
