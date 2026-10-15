@@ -4,11 +4,11 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="theme-color" content="#101022">
-  <meta name="description" content="RetoArena: compite, reta en directo y descubre a la comunidad.">
+  <meta name="description" content="Descubre retos, publica tus vídeos y compite con la comunidad de RetoArena.">
   <link rel="manifest" href="manifest.webmanifest">
   <link rel="icon" href="icon.svg" type="image/svg+xml">
-  <link rel="stylesheet" href="styles.css?v=13">
-  <title>RetoArena — Entra en la arena</title>
+  <link rel="stylesheet" href="styles.css?v=14">
+  <title>RetoArena — Retos, vídeos y competición</title>
 </head>
 <body>
   <header class="topbar">
@@ -20,27 +20,27 @@
   <main>
     <section class="hero">
       <div class="hero-copy">
-        <span class="eyebrow"><span class="pulse"></span> LA ARENA DIGITAL · TEMPORADA 01</span>
-        <h1>NO MIRES DESDE FUERA.<br><span class="gradient-text">ENTRA EN LA ARENA.</span></h1>
-        <p>Acepta desafíos, compite por puntos y construye tu reputación. Cada ronda cuenta. Cada rival puede superarte.</p>
-        <button class="primary-btn" id="exploreBtn">DESCUBRIR LOS RETOS <span>↗</span></button>
+        <span class="eyebrow"><span class="pulse"></span> RETOS DE LA COMUNIDAD · COMPETICIÓN ABIERTA</span>
+        <h1>RETOS, VÍDEOS.<br><span class="gradient-text">QUE EMPIECE EL DESAFÍO.</span></h1>
+        <p>Descubre lo que otros están haciendo, publica tus propios retos y demuestra de qué eres capaz. Tu perfil reúne tus vídeos, tus puntos y tu evolución como competidor.</p>
+        <button class="primary-btn" id="exploreBtn">EXPLORAR RETOS Y VÍDEOS <span>↗</span></button>
       </div>
       <div class="hero-art" aria-hidden="true">
         <div class="orbit orbit-one"></div><div class="orbit orbit-two"></div>
         <div class="trophy">⚔️</div><div class="spark spark-a">✦</div><div class="spark spark-b">✧</div>
-        <div class="floating-card card-top"><span>🔴</span><div><b>La arena te observa</b><small>Tu momento empieza aquí</small></div></div>
-        <div class="floating-card card-bottom"><span>🏆</span><div><b>32 competidores</b><small>Una temporada. Un campeón.</small></div></div>
+        <div class="floating-card card-top"><span>🔴</span><div><b>La comunidad está en juego</b><small>Descubre el próximo reto</small></div></div>
+        <div class="floating-card card-bottom"><span>🏆</span><div><b>Tu perfil. Tus retos.</b><small>Publica y deja tu marca</small></div></div>
       </div>
     </section>
 
     <section class="arena-live section" id="liveArena" aria-labelledby="liveArenaTitle">
       <div class="arena-live-head">
         <div>
-          <span class="eyebrow"><span class="pulse"></span> TEMPORADA 01 · LA COMPETICIÓN EMPIEZA AQUÍ</span>
+          <span class="eyebrow"><span class="pulse"></span> RETOS DESTACADOS · PARTICIPA</span>
           <h2 id="liveArenaTitle">Batallas en <span class="gradient-text">directo</span></h2>
-          <p>Dos competidores. Un reto elegido por la comunidad. El público decide con reglas claras.</p>
+          <p>Descubre el formato de batalla de RetoArena. Las competiciones en directo se activarán cuando estén implementados los emparejamientos y la votación en tiempo real.</p>
         </div>
-        <span class="live-status"><span></span> MODO BATALLA · EN DESARROLLO</span>
+        <span class="live-status"><span></span> PRÓXIMAMENTE · BATALLAS EN DIRECTO</span>
       </div>
       <div class="battle-preview-grid">
         <article class="battle-preview battle-red">
@@ -66,7 +66,7 @@
     </section>
 
     <section class="stats">
-      <div><strong id="statChallenges">6</strong><span>Opciones disponibles</span></div>
+      <div><strong id="statChallenges">6</strong><span>Minijuegos</span></div>
       <div><strong>32</strong><span>Plazas previstas</span></div>
       <div><strong>0 €</strong><span>Coste para participar</span></div>
     </section>
@@ -83,7 +83,7 @@
     </section>
 
     <section class="section split-section">
-      <div class="section-heading"><div><span class="eyebrow">LA COMUNIDAD DECIDE</span><h2>Retos de la gente</h2></div><span class="demo-tag">COMUNIDAD</span></div>
+      <div class="section-heading"><div><span class="eyebrow">PUBLICACIONES DE COMPETIDORES</span><h2>Vídeos y retos de la comunidad</h2></div><span class="demo-tag">COMUNIDAD</span></div>
       <div class="community-grid" id="communityGrid"></div>
     </section>
 
@@ -97,7 +97,7 @@
       <span class="status-chip">Sin premios activos</span>
     </section>
 
-    <footer><a class="brand footer-brand" href="#"><span class="brand-mark">R</span><span>Reto<span class="accent">Arena</span></span></a><span>Temporada piloto · prototipo v0.3</span><span>Compite limpio. Respeta a todos.</span></footer>
+    <footer><a class="brand footer-brand" href="#"><span class="brand-mark">R</span><span>Reto<span class="accent">Arena</span></span></a><span>Retos · vídeos · comunidad</span><span>Compite limpio. Respeta a todos.</span></footer>
   </main>
 
   <nav class="mobile-nav" aria-label="Navegación principal">
@@ -113,15 +113,15 @@
   </dialog>
   <dialog id="submitDialog" class="modal">
     <form method="dialog"><button class="close-btn" aria-label="Cerrar">×</button></form>
-    <span class="eyebrow">TU MOMENTO</span><h2>Publica un reto real</h2>
-    <p class="modal-intro">Añade un enlace a un vídeo público. No subas contenido peligroso, datos personales ni material de otras personas sin permiso.</p>
+    <span class="eyebrow">TU MOMENTO</span><h2>Publica tu reto</h2>
+    <p class="modal-intro">Comparte un vídeo de tu reto mediante un enlace público. Añade un título y una descripción para que la comunidad descubra tu publicación. No publiques contenido peligroso ni material de otras personas sin permiso.</p>
     <form id="submitForm" class="submit-form">
       <label>Nombre del reto<input name="title" required maxlength="70" placeholder="Ej. Mi mejor truco de fútbol"></label>
       <label>Tu nombre público<input name="creator" required maxlength="30" placeholder="Ej. Alex"></label>
       <label>Enlace del vídeo<input name="url" required type="url" placeholder="https://..." pattern="https?://.+"></label>
       <label>Descripción<textarea name="description" maxlength="180" placeholder="¿Qué tiene que valorar la comunidad?"></textarea></label>
       <p class="form-hint">Tu reto se guardará en RetoArena y quedará pendiente de revisión. Solo se publicará cuando sea aprobado por moderación.</p>
-      <button class="primary-btn full" type="submit">Enviar para revisión ↗</button>
+      <button class="primary-btn full" type="submit">Publicar reto para revisión ↗</button>
     </form>
     <div id="submitFeedback" class="feedback hidden" role="status"></div>
   </dialog>
