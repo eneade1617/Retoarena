@@ -7,10 +7,25 @@
   <meta name="description" content="Descubre retos, publica tus vídeos y compite con la comunidad de RetoArena.">
   <link rel="manifest" href="manifest.webmanifest">
   <link rel="icon" href="icon.svg" type="image/svg+xml">
-  <link rel="stylesheet" href="styles.css?v=15">
+  <link rel="stylesheet" href="styles.css?v=16">
   <title>RetoArena — Retos, vídeos y competición</title>
 </head>
-<body>
+<body>\n  <section id="welcomeScreen" class="welcome-screen" aria-label="Bienvenido a RetoArena">
+    <div class="welcome-glow welcome-glow-one"></div><div class="welcome-glow welcome-glow-two"></div>
+    <div class="welcome-brand"><span class="welcome-mark">R</span><span>RETO<span>ARENA</span></span></div>
+    <div class="welcome-center">
+      <span class="welcome-kicker"><i></i> RETOS · VÍDEOS · COMPETICIÓN</span>
+      <h1>QUE EMPIECE<br><span>EL DESAFÍO.</span></h1>
+      <p>Descubre retos, comparte tus mejores momentos y demuestra de qué eres capaz.</p>
+      <div class="welcome-actions">
+        <button id="welcomePlay" class="welcome-play" type="button"><span>Entrar a RetoArena</span><b>↗</b></button>
+        <button id="welcomeLogin" class="welcome-login" type="button">Ya tengo una cuenta</button>
+      </div>
+      <div class="welcome-foot"><span>01</span><span class="welcome-line"></span><span>EL RETO ES TUYO</span></div>
+    </div>
+    <div class="welcome-orb" aria-hidden="true"><span>RA</span><i></i><b></b></div>
+  </section>
+
   <header class="topbar">
     <a class="brand" href="#" aria-label="RetoArena inicio"><span class="brand-mark">R</span><span>Reto<span class="accent">Arena</span></span></a>
     <button id="installBtn" class="install-btn hidden" type="button">Instalar app</button>
@@ -126,6 +141,25 @@
     <div id="submitFeedback" class="feedback hidden" role="status"></div>
   </dialog>
   <div id="toast" class="toast" role="status" aria-live="polite"></div>
+  <script>
+    (() => {
+      const screen = document.getElementById("welcomeScreen");
+      if (!screen) return;
+      let seen = false;
+      try { seen = sessionStorage.getItem("retoarena_welcome_seen_v16") === "1"; } catch (_) {}
+      if (seen) screen.classList.add("welcome-hidden");
+      const close = () => {
+        screen.classList.add("welcome-leaving");
+        try { sessionStorage.setItem("retoarena_welcome_seen_v16", "1"); } catch (_) {}
+        window.setTimeout(() => screen.remove(), 360);
+      };
+      document.getElementById("welcomePlay")?.addEventListener("click", close);
+      document.getElementById("welcomeLogin")?.addEventListener("click", () => {
+        close();
+        window.setTimeout(() => document.getElementById("accountBtn")?.click(), 420);
+      });
+    })();
+  </script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="supabase-config.js"></script>
   <script src="app.js"></script>
