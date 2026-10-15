@@ -7,7 +7,7 @@
   <meta name="description" content="Descubre retos, publica tus vídeos y compite con la comunidad de RetoArena.">
   <link rel="manifest" href="manifest.webmanifest">
   <link rel="icon" href="icon.svg" type="image/svg+xml">
-  <link rel="stylesheet" href="styles.css?v=29">
+  <link rel="stylesheet" href="styles.css?v=30">
   <title>RetoArena — Retos, vídeos y competición</title>
 </head>
 <body>\n  <section id="welcomeScreen" class="welcome-screen" aria-label="Bienvenido a RetoArena">
@@ -81,17 +81,20 @@
     </section>
 
     <section class="stats">
-      <div><strong id="statChallenges">6</strong><span>Minijuegos</span></div>
+      <div><strong id="statChallenges">5</strong><span>Categorías</span></div>
       <div><strong>32</strong><span>Plazas previstas</span></div>
       <div><strong>0 €</strong><span>Coste para participar</span></div>
     </section>
 
     <section class="section" id="challenges">
-      <div class="section-heading"><div><span class="eyebrow">CADA DÍA CUENTA</span><h2>Retos destacados</h2></div>
+      <div class="section-heading"><div><span class="eyebrow">CADA DÍA CUENTA</span><h2>Elige tu arena</h2></div>
         <div class="filters" role="group" aria-label="Filtrar retos">
           <button class="filter active" data-filter="todos">Todos</button>
-          <button class="filter" data-filter="juego">Minijuegos</button>
-          <button class="filter" data-filter="real">Retos reales</button>
+          <button class="filter" data-filter="extremo">Extremos</button>
+          <button class="filter" data-filter="comida">Comida</button>
+          <button class="filter" data-filter="deporte">Deporte</button>
+          <button class="filter" data-filter="challenge">Challenges</button>
+          <button class="filter" data-filter="te-reto">Te reto</button>
         </div>
       </div>
       <div class="challenge-grid" id="challengeGrid"></div>
@@ -130,11 +133,12 @@
   <dialog id="submitDialog" class="modal">
     <form method="dialog"><button class="close-btn" aria-label="Cerrar">×</button></form>
     <span class="eyebrow">TU MOMENTO</span><h2>Publica tu reto</h2>
-    <p class="modal-intro">Comparte un vídeo de tu reto mediante un enlace público. Añade un título y una descripción para que la comunidad descubra tu publicación. No publiques contenido peligroso ni material de otras personas sin permiso.</p>
+    <p class="modal-intro">Sube el vídeo directamente desde tu móvil, elige una categoría y lanza tu reto a la comunidad. Tu publicación quedará pendiente de revisión antes de hacerse pública. Nada de enlaces externos obligatorios.</p>
     <form id="submitForm" class="submit-form">
       <label>Nombre del reto<input name="title" required maxlength="70" placeholder="Ej. Mi mejor truco de fútbol"></label>
-      <label>Tu nombre público<input name="creator" required maxlength="30" placeholder="Ej. Alex"></label>
-      <label>Enlace del vídeo<input name="url" required type="url" placeholder="https://..." pattern="https?://.+"></label>
+      <label>Categoría del reto<select name="category" required><option value="extremo">🔥 Extremo (seguro)</option><option value="comida">🍔 Comida</option><option value="deporte">🏆 Deporte</option><option value="challenge">🎯 Challenge</option><option value="te-reto">⚔️ Te reto</option></select></label>
+      <label class="challenge-video-picker"><span class="challenge-video-icon">＋</span><span><strong>Elegir vídeo del móvil</strong><small>MP4, MOV o WebM · máximo 45 MB</small></span><input name="video_file" type="file" accept="video/mp4,video/quicktime,video/webm,.mp4,.mov,.webm" required></label>
+      <div id="challengeVideoPreview" class="challenge-video-preview" hidden></div>
       <label>Descripción<textarea name="description" maxlength="180" placeholder="¿Qué tiene que valorar la comunidad?"></textarea></label>
       <p class="form-hint">Tu reto se guardará en RetoArena y quedará pendiente de revisión. Solo se publicará cuando sea aprobado por moderación.</p>
       <button class="primary-btn full" type="submit">Publicar reto para revisión ↗</button>
@@ -163,11 +167,11 @@
   </script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="supabase-config.js"></script>
-  <script src="app.js?v=27"></script>
+  <script src="app.js?v=30"></script>
   <script src="auth.js?v=28"></script>
   <script src="perfil.js?v=28"></script>
   <script src="retos-supabase.js?v=27"></script>
-  <script src="community.js?v=28"></script>
-  <script src="direct-challenges.js?v=29"></script>
+  <script src="community.js?v=30"></script>
+  <script src="direct-challenges.js?v=30"></script>
 </body>
 </html>
