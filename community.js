@@ -564,6 +564,22 @@
   // Turn challenge submission into a real authenticated submission stored for moderation.
   const submitForm = $("#submitForm");
   if (submitForm) {
+    const videoInput = submitForm.elements.video_file;
+    const preview = $("#challengeVideoPreview");
+    let previewUrl = null;
+    videoInput?.addEventListener("change", () => {
+      if (previewUrl) URL.revokeObjectURL(previewUrl);
+      const file = videoInput.files?.[0];
+      if (!file) { preview.hidden = true; preview.innerHTML = ""; return; }
+      if (!["video/mp4","video/quicktime","video/webm"].includes(file.type) || file.size > 45*1024*1024) {
+        videoInput.value = ""; preview.hidden = true; preview.innerHTML = "";
+        if (feedback) feedback.textContent = "Elige MP4, MOV o WebM de máximo 45 MB.";
+        return;
+      }
+      previewUrl = URL.createObjectURL(file);
+      preview.hidden = false;
+      preview.innerHTML = '<video controls playsinline preload="metadata" src="'+previewUrl+'"></video><span>'+esc(file.name)+' · '+(file.size/1024/1024).toFixed(1)+' MB</span>';
+    });
     submitForm.addEventListener("submit", async event => {
       event.preventDefault();
       event.stopImmediatePropagation();
@@ -571,62 +587,50 @@
       const submitButton = submitForm.querySelector('[type="submit"]');
       const fd = new FormData(submitForm);
       const title = String(fd.get("title") || "").trim();
-      const url = safeUrl(String(fd.get("url") || "").trim());
+      const category = String(fd.get("category") || "challenge");
       const description = String(fd.get("description") || "").trim();
-      if (!url) {
-        if (feedback) {
-          feedback.classList.remove("hidden");
-          feedback.textContent = "Introduce un enlace de vídeo válido que empiece por http:// o https://.";
-        }
-        return;
+      const file = videoInput?.files?.[0];
+      if (!title || !file) {
+        feedback.classList.remove("hidden"); feedback.textContent = "Añade un título y selecciona el vídeo de tu móvil."; return;
       }
-
+      if (!["extremo","comida","deporte","challenge","te-reto"].includes(category)) {
+        feedback.classList.remove("hidden"); feedback.textContent = "Selecciona una categoría válida."; return;
+      }
+      if (!["video/mp4","video/quicktime","video/webm"].includes(file.type) || file.size > 45*1024*1024) {
+        feedback.classList.remove("hidden"); feedback.textContent = "El vídeo debe ser MP4, MOV o WebM y no superar 45 MB."; return;
+      }
       const { data: sessionData, error: sessionError } = await db.auth.getSession();
       const user = sessionData?.session?.user;
       if (sessionError || !user) {
-        if (feedback) {
-          feedback.classList.remove("hidden");
-          feedback.textContent = "Para publicar un reto, primero inicia sesión o crea una cuenta. Tu reto no se ha enviado todavía.";
-        }
-        notify("Inicia sesión antes de publicar un reto.");
-        $("#accountBtn")?.click();
-        return;
+        feedback.classList.remove("hidden"); feedback.textContent = "Inicia sesión o crea una cuenta antes de publicar.";
+        notify("Inicia sesión antes de publicar un reto."); $("#accountBtn")?.click(); return;
       }
-
-      if (submitButton) submitButton.disabled = true;
-      if (feedback) {
-        feedback.classList.remove("hidden");
-        feedback.textContent = "Enviando tu reto para revisión…";
-      }
-
+      submitButton.disabled = true; videoInput.disabled = true;
+      feedback.classList.remove("hidden"); feedback.textContent = "Subiendo tu vídeo… no cierres esta ventana.";
+      let uploadedPath = null;
       try {
-        const { data: profile } = await db.from("profiles")
-          .select("username, display_name")
-          .eq("id", user.id)
-          .maybeSingle();
-
+        const ext = file.name.includes(".") ? file.name.split(".").pop().toLowerCase().replace(/[^a-z0-9]/g,"") : "mp4";
+        uploadedPath = user.id+"/retos/"+Date.now()+"-"+Math.random().toString(36).slice(2,8)+"."+ext;
+        const { error: uploadError } = await db.storage.from("retoarena-media").upload(uploadedPath,file,{upsert:false,contentType:file.type,cacheControl:"3600"});
+        if (uploadError) throw uploadError;
+        const { data: publicData } = db.storage.from("retoarena-media").getPublicUrl(uploadedPath);
+        if (!publicData?.publicUrl) throw new Error("No se pudo generar la dirección del vídeo subido.");
+        feedback.textContent = "Vídeo subido. Guardando reto para revisión…";
         const { error } = await db.from("challenges").insert({
-          title,
-          description: description || null,
-          category: "real",
-          status: "pending",
-          creator_id: user.id,
-          video_url: url
+          title, description: description || null, category, status: "pending", creator_id: user.id, video_url: publicData.publicUrl
         });
         if (error) throw error;
-
-        if (feedback) feedback.textContent = "¡Reto enviado correctamente! Queda pendiente de revisión y solo aparecerá públicamente si lo aprueba moderación.";
         submitForm.reset();
-        notify("Reto enviado para revisión.");
-        if (typeof window.retoArenaCargarRetosAprobados === "function") {
-          await window.retoArenaCargarRetosAprobados();
-        }
+        if (previewUrl) URL.revokeObjectURL(previewUrl); previewUrl = null;
+        preview.hidden = true; preview.innerHTML = "";
+        feedback.textContent = "¡Reto enviado! Queda pendiente de moderación y se publicará si es aprobado.";
+        notify("Vídeo subido y reto enviado para revisión.");
+        if (typeof window.retoArenaCargarRetosAprobados === "function") await window.retoArenaCargarRetosAprobados();
       } catch (error) {
+        if (uploadedPath) { try { await db.storage.from("retoarena-media").remove([uploadedPath]); } catch (_) {} }
         console.error("RetoArena: error enviando reto:", error.message);
-        if (feedback) feedback.textContent = "No se pudo enviar el reto: " + (error.message || "error desconocido") + ". Comprueba tu sesión e inténtalo de nuevo.";
-      } finally {
-        if (submitButton) submitButton.disabled = false;
-      }
+        feedback.textContent = "No se pudo publicar: "+(error.message||"error desconocido")+". Comprueba tu conexión e inténtalo de nuevo.";
+      } finally { submitButton.disabled = false; videoInput.disabled = false; }
     }, true);
   }
 
