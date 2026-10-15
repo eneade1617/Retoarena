@@ -68,11 +68,19 @@
     feed.className = "discovery-feed-dialog";
     feed.innerHTML = '<header class="discovery-feed-top"><button type="button" id="discoveryFeedClose" aria-label="Cerrar">‹</button><div><strong>DESCUBRIR</strong><small>VÍDEOS · FOTOS · RETOS</small></div><button type="button" id="openNotifications" class="discovery-notification-button" aria-label="Notificaciones">♧ <span id="notificationUnreadCount"></span></button><span class="discovery-feed-live"><i></i> COMUNIDAD</span></header><div class="discovery-feed-body"><div class="discovery-feed-intro"><span>LA ARENA SE MUEVE</span><h2>Descubre a los próximos protagonistas.</h2><p>Momentos, vídeos y retos compartidos por la comunidad.</p></div><div id="discoveryFeedItems" class="discovery-feed-items"><p class="discovery-feed-state">Cargando publicaciones…</p></div></div>';
     document.body.appendChild(feed);
+    feed.addEventListener("close", () => {
+      if (window.retoArenaVideoObserver) {
+        window.retoArenaVideoObserver.disconnect();
+        window.retoArenaVideoObserver = null;
+      }
+      feed.querySelectorAll("video").forEach(video => video.pause());
+    });
   }
 
   async function openDiscoveryFeed(focusPostId = null) {
     const feed = $("#discoveryFeedDialog"), target = $("#discoveryFeedItems");
     if (!feed || !target) return;
+    if (window.retoArenaVideoObserver) { window.retoArenaVideoObserver.disconnect(); window.retoArenaVideoObserver = null; }
     if (!feed.open) feed.showModal();
     target.innerHTML = '<p class="discovery-feed-state">Buscando las últimas publicaciones…</p>';
     const { data: posts, error } = await db.from("profile_posts")
