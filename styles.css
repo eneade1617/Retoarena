@@ -50,3 +50,8 @@
 
 .tag-competitive{color:#ffe2a6;border-color:#8d6638;background:#3a2b19}
 .tag-training{color:#a9e9ff;border-color:#355c77;background:#162d3d}
+
+/* Progressive difficulty labels */
+.duel-level{display:inline-flex;align-items:center;margin:12px 0 2px;padding:6px 10px;border:1px solid #7655a7;border-radius:7px;background:linear-gradient(90deg,#2b1e43,#40204b);color:#e4c9ff;font-size:9px;font-weight:950;letter-spacing:1.6px}
+.duel-level:has(+h2){box-shadow:0 0 18px #a66dff22}
+.duel-timer #duelTimerBar{background:linear-gradient(90deg,#7cf2b4 0%,#c3d76c 35%,#ffad68 70%,#ff5c8d 100%)}
