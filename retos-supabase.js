@@ -9,7 +9,7 @@
   async function cargarRetosAprobados() {
     const { data, error } = await db
       .from("challenges")
-      .select("id, title, description, category, status, video_url, created_at")
+      .select("id, title, description, category, status, video_url, creator_id, created_at")
       .eq("status", "approved")
       .order("created_at", { ascending: false });
 
