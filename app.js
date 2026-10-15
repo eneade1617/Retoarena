@@ -138,7 +138,7 @@ async function startQuiz(){
 function showQuestion(){
   if(gameState.index>=questions.length){finishQuiz();return}
   const q=questions[gameState.index];
-  $("#gameContent").innerHTML=`<span class="game-kicker">ARENA DIGITAL · PREGUNTA ${gameState.index+1}/${questions.length}</span><h2>Duelo de cultura general</h2><div class="game-question">${q.q}</div><div class="answer-list">${q.a.map((a,i)=>`<button class="answer-btn" data-answer="${i}">${String.fromCharCode(65+i)}. ${a}</button>`).join("")}</div><div id="answerFeedback"></div><p class="form-hint">Modo demostración: los puntos se guardan solo en este dispositivo.</p>`;
+  $("#gameContent").innerHTML=`<span class="game-kicker">ARENA DIGITAL · PREGUNTA ${gameState.index+1}/${questions.length}</span><h2>Duelo de cultura general</h2><div class="game-question">${q.q}</div><div class="answer-list">${q.a.map((a,i)=>`<button class="answer-btn" data-answer="${i}">${String.fromCharCode(65+i)}. ${a}</button>`).join("")}</div><div id="answerFeedback"></div><p class="form-hint">Partida competitiva: el servidor valida tus respuestas y guarda los puntos en tu perfil.</p>`;
 }
 async function answerQuestion(index){
   if(gameState.answered)return;
