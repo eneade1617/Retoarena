@@ -5,6 +5,12 @@
     return;
   }
 
+  if (!document.getElementById("retoArenaRankStyles")) {
+    const style=document.createElement("style");
+    style.id="retoArenaRankStyles";
+    style.textContent=".ra-rank-badge{display:inline-flex;align-items:center;justify-content:center;margin-top:5px;padding:4px 8px;border:1px solid #a855f755;border-radius:999px;background:#a855f718;color:#f2b3e6;font-size:10px;font-weight:800;letter-spacing:.7px}";
+    document.head.appendChild(style);
+  }
   const $ = (selector, root = document) => root.querySelector(selector);
   const esc = (value) => String(value ?? "").replace(/[&<>"']/g, c => ({
     "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
@@ -392,7 +398,7 @@
         <article class="community-card" data-profile-id="${esc(profile.id)}" tabindex="0" role="button" aria-label="Ver perfil de ${esc(name)}" style="cursor:pointer">
           <div style="display:flex;flex-direction:column;align-items:center;gap:7px;min-width:70px">
             ${avatar}
-            <span style="font-size:10px;color:var(--muted)">${Number(profile.points || 0).toLocaleString("es-ES")} pts</span>
+            <span style="font-size:10px;color:var(--muted)">${Number(profile.points || 0).toLocaleString("es-ES")} pts</span><span class="ra-rank-badge">${Number(profile.points||0)>=500?"♛ ÉLITE":Number(profile.points||0)>=250?"◆ ORO":Number(profile.points||0)>=100?"◇ PLATA":"● BRONCE"}</span>
           </div>
           <div class="community-content">
             <h3>${esc(name)}</h3>
