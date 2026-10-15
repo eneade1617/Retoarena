@@ -20,11 +20,11 @@
   dialog.className = "profile-dialog";
   dialog.style.cssText = "max-width:560px;width:calc(100% - 28px);max-height:88vh;overflow:auto";
   dialog.innerHTML = `
+    <div class="profile-editor-cover"></div><div class="profile-editor-inner">
     <form method="dialog">
       <button aria-label="Cerrar" style="float:right;background:none;color:white;border:0;font-size:24px;cursor:pointer">×</button>
     </form>
-    <h2 style="margin:8px 0 6px">Mi perfil</h2>
-    <p style="color:#aaa4c2;font-size:13px;line-height:1.5">Personaliza cómo te ve la comunidad de RetoArena.</p>
+    <div class="profile-editor-heading"><div class="profile-editor-badge" id="profileEditorAvatar">RA</div><div><h2>Tu perfil de competidor</h2><p>Personaliza tu identidad en RetoArena</p></div></div>
     <form id="profileForm" style="display:grid;gap:13px">
       <label style="display:grid;gap:6px;font-size:12px">Nombre de usuario
         <input name="username" required minlength="3" maxlength="30" pattern="[A-Za-z0-9_.-]+" placeholder="ej. Alex_Reto" style="width:100%;box-sizing:border-box;padding:12px;border-radius:10px;border:1px solid #39364f;background:#0f0f1f;color:white">
@@ -56,6 +56,7 @@
       </div>
       <p id="profilePreviewBio" style="font-size:13px;line-height:1.5;color:#ddd8ed;white-space:pre-wrap;overflow-wrap:anywhere"></p>
     </section>
+    </div>
   `;
   document.body.appendChild(dialog);
 
@@ -118,6 +119,12 @@
       form.elements.bio.value = profile.bio || "";
       form.elements.avatar_url.value = profile.avatar_url || "";
       renderPreview(profile);
+      const editorAvatar = dialog.querySelector("#profileEditorAvatar");
+      const editorName = profile.display_name || profile.username || "RA";
+      editorAvatar.textContent = editorName.slice(0, 2).toUpperCase();
+      editorAvatar.style.backgroundImage = imageUrl ? 'url("' + imageUrl.replace(/["\\\\]/g, "") + '")' : "";
+      editorAvatar.style.backgroundSize = "cover";
+      editorAvatar.style.backgroundPosition = "center";
 
       const imageUrl = safeImageUrl(profile.avatar_url || "");
       if (imageUrl) {
