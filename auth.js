@@ -12,6 +12,7 @@
 
   const accessButton = document.createElement("button");
   accessButton.type = "button";
+  accessButton.id = "accountBtn";
   accessButton.textContent = "Entrar";
   accessButton.style.cssText =
     "border:1px solid #8b5cf6;border-radius:12px;padding:10px 14px;background:#201735;color:white;cursor:pointer";
