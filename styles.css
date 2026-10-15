@@ -522,3 +522,8 @@ body{background:radial-gradient(ellipse at 50% -18%,#4d155e 0,transparent 42%),r
 .filters{display:flex;gap:8px;flex-wrap:wrap;max-width:100%}
 .filters .filter{white-space:nowrap}
 @media(max-width:600px){.filters{overflow-x:auto;flex-wrap:nowrap;padding:2px 0 8px;scrollbar-width:none}.filters::-webkit-scrollbar{display:none}.filters .filter{flex:0 0 auto}.challenge-video-picker{align-items:flex-start;flex-wrap:wrap}.challenge-video-picker input{width:100%}.submit-form .primary-btn.full{min-height:58px}}
+
+.challenge-card-video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;background:#08070d}
+.challenge-art-symbol{position:relative;z-index:1;font-size:58px;filter:drop-shadow(0 8px 20px rgba(0,0,0,.45))}
+.challenge-card .challenge-art .tag{z-index:2}
+.challenge-card-video+.tag{position:absolute;z-index:3;top:12px;left:12px}
