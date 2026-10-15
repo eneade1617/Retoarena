@@ -313,7 +313,9 @@
       console.error("RetoArena: no se pudo guardar el voto:", error.message);
       notify(error.code === "23505"
         ? "Ya has votado por este reto."
-        : "No se pudo registrar tu voto. Comprueba que has iniciado sesión e inténtalo de nuevo.");
+        : String(error.message || "").includes("No puedes votar por tu propio reto")
+          ? "No puedes votar por tu propio reto. ¡Invita a la comunidad a participar!"
+          : "No se pudo registrar tu voto. Comprueba que has iniciado sesión e inténtalo de nuevo.");
       await loadVotes();
       return;
     }
