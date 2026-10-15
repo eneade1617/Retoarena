@@ -47,3 +47,6 @@
 .duel-final-score{font-size:56px;line-height:1;font-weight:950;letter-spacing:-3px;color:#d3baff;margin:18px 0 8px;text-shadow:0 0 30px #9c72ff55}
 .duel-final-score small{font-size:20px;color:var(--muted);letter-spacing:0}
 @keyframes duelPulse{from{opacity:1}to{opacity:.55}}
+
+.tag-competitive{color:#ffe2a6;border-color:#8d6638;background:#3a2b19}
+.tag-training{color:#a9e9ff;border-color:#355c77;background:#162d3d}
