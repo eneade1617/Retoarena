@@ -67,7 +67,7 @@
     <div class="own-profile-topbar"><button type="button" id="ownProfileClose">‹</button><strong>MI ESPACIO</strong><button type="button" id="ownProfileEdit">Editar perfil</button></div>
     <div class="own-profile-cover"><span>RETOARENA / CREATOR SPACE</span></div>
     <section class="own-profile-content">
-      <div class="own-profile-identity"><div class="own-profile-avatar" id="ownProfileAvatar">RA</div><div class="own-profile-idtext"><h1 id="ownProfileName">Tu perfil</h1><p id="ownProfileHandle">@competidor</p><span class="own-profile-tag">◆ COMPETIDOR</span></div></div>
+      <div class="own-profile-identity"><div class="own-profile-avatar" id="ownProfileAvatar">RA</div><div class="own-profile-idtext"><h1 id="ownProfileName">Tu perfil</h1><p id="ownProfileHandle">@competidor</p><span class="own-profile-tag" id="ownProfileRank">◆ BRONCE · COMPETIDOR</span></div></div>
       <p id="ownProfileBio" class="own-profile-bio"></p>
       <div class="own-profile-stats"><div><strong id="ownProfilePoints">0</strong><span>PUNTOS</span></div><div><strong id="ownProfilePostCount">0</strong><span>PUBLICACIONES</span></div><div><strong id="ownProfileChallengeCount">0</strong><span>RETOS APROBADOS</span></div></div>
       <section class="own-profile-publish"><span class="own-profile-overline">TU HISTORIA, EN IMÁGENES</span><h2>Publica un momento</h2><p>Sube fotos y vídeos desde tu móvil. Para cuidar el espacio gratuito, hasta 5 archivos por tanda, 5 MB por foto y 25 MB por vídeo.</p>
@@ -100,7 +100,11 @@
     ownProfileDialog.querySelector("#ownProfileName").textContent=name;
     ownProfileDialog.querySelector("#ownProfileHandle").textContent="@"+(profile.username||"competidor");
     ownProfileDialog.querySelector("#ownProfileBio").textContent=profile.bio||"Este es tu espacio. Cuéntale a la comunidad quién eres y qué retos te mueven.";
-    ownProfileDialog.querySelector("#ownProfilePoints").textContent=Number(profile.points||0).toLocaleString("es-ES");
+    const totalPoints=Number(profile.points||0);
+    ownProfileDialog.querySelector("#ownProfilePoints").textContent=totalPoints.toLocaleString("es-ES");
+    const rank=totalPoints>=500?{name:"ÉLITE",icon:"♛"}:totalPoints>=250?{name:"ORO",icon:"◆"}:totalPoints>=100?{name:"PLATA",icon:"◇"}:{name:"BRONCE",icon:"●"};
+    const rankEl=ownProfileDialog.querySelector("#ownProfileRank");
+    if(rankEl)rankEl.textContent=rank.icon+" "+rank.name+" · COMPETIDOR";
     ownProfileDialog.querySelector("#ownProfilePostCount").textContent=String(ownProfilePosts.length);
     ownProfileDialog.querySelector("#ownProfileGalleryCount").textContent=ownProfilePosts.length+(ownProfilePosts.length===1?" publicación":" publicaciones");
   }
