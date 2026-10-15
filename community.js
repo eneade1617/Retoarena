@@ -63,7 +63,22 @@
     }
 
     const profiles = data || [];
+    window.retoArenaProfilesById = Object.fromEntries(profiles.map(p => [p.id, p]));
     if (count) count.textContent = profiles.length + (profiles.length === 1 ? " participante" : " participantes");
+
+    // Replace demo ranking with the actual registered community when profiles exist.
+    const leaderboardGrid = $("#leaderboard");
+    if (leaderboardGrid && profiles.length) {
+      const ranked = [...profiles].sort((a, b) => Number(b.points || 0) - Number(a.points || 0));
+      leaderboardGrid.innerHTML = ranked.slice(0, 10).map((p, i) => {
+        const name = p.display_name || p.username || "Jugador";
+        return '<div class="leader-row"><span class="rank ' + (i === 0 ? 'gold' : '') + '">' +
+          String(i + 1).padStart(2, "0") + '</span><div class="player"><span class="player-avatar">' +
+          esc(name.slice(0, 2).toUpperCase()) + '</span><span><b>' + esc(name) +
+          '</b><small>@' + esc(p.username || "jugador") + '</small></span></div><span class="points">' +
+          Number(p.points || 0).toLocaleString("es-ES") + ' <small>pts</small></span></div>';
+      }).join("");
+    }
     $("#publicCommunityEmpty").style.display = profiles.length ? "none" : "block";
     if (!profiles.length) {
       grid.innerHTML = "";
@@ -248,6 +263,19 @@
       }
     }, true);
   }
+
+  document.addEventListener("click", async event => {
+    if (!event.target.closest("#submitNav")) return;
+    const creatorInput = $('#submitForm [name="creator"]');
+    if (!creatorInput) return;
+    const { data } = await db.auth.getSession();
+    if (!data.session?.user) return;
+    const { data: profile } = await db.from("profiles")
+      .select("username, display_name")
+      .eq("id", data.session.user.id)
+      .maybeSingle();
+    creatorInput.value = profile?.display_name || profile?.username || data.session.user.email?.split("@")[0] || "";
+  });
 
   db.auth.onAuthStateChange(() => {
     loadProfiles();
