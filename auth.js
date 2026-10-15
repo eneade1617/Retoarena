@@ -84,6 +84,9 @@
     registerButton.textContent =
       registering ? "Ya tengo cuenta" : "Crear cuenta";
     username.required = registering;
+    password.minLength = registering ? 8 : 1;
+    password.autocomplete = registering ? "new-password" : "current-password";
+    password.placeholder = registering ? "Mínimo 8 caracteres" : "";
     username.style.display = registering ? "block" : "none";
     username.parentElement.style.display = registering ? "block" : "none";
     showFeedback("");
