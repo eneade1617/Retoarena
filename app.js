@@ -299,6 +299,9 @@ function openMemory(){
 }
 $("#challengeGrid").addEventListener("click",e=>{const b=e.target.closest("[data-challenge]");if(!b)return;const id=b.dataset.challenge;if(id==="quiz")startQuiz();else if(id==="memory")openMemory();else if(id==="speed"){let seq=Array.from({length:5},()=>Math.floor(Math.random()*9)+1);$("#gameContent").innerHTML=`<span class="game-kicker">ARENA DIGITAL</span><h2>Reto de velocidad</h2><p class="modal-intro">Memoriza esta secuencia durante 3 segundos y luego introdúcela.</p><div class="game-result" id="sequence">${seq.join(" · ")}</div><form id="speedForm" class="submit-form"><label>Escribe los números en orden<input name="sequence" required inputmode="numeric" pattern="[0-9 ]+" placeholder="Ej. 3 5 1 8 2"></label><button class="primary-btn full">Comprobar ↗</button></form><div id="speedResult"></div>`;$("#gameDialog").showModal();setTimeout(()=>{const s=$("#sequence");if(s)s.textContent="Secuencia oculta";},3000);$("#gameContent").onsubmit=(ev)=>{if(ev.target.id!=="speedForm")return;ev.preventDefault();const val=new FormData(ev.target).get("sequence").replace(/\s/g,"");const ok=val===seq.join("");$("#speedResult").innerHTML=`<div class="game-result">${ok?"⚡ ¡Correcto! Secuencia completada. Este modo es entrenamiento y no suma puntos de ranking.":"La secuencia era "+seq.join("")+". ¡Entrena y vuelve a intentarlo!"}</div>`;};}else openRealChallenge(id)});
 $("#gameContent").addEventListener("click",e=>{const a=e.target.closest("[data-answer]");if(a){answerQuestion(Number(a.dataset.answer));return}if(e.target.id==="nextQuestion"){gameState.index++;gameState.answered=false;showQuestion()}if(e.target.id==="playAgain")startQuiz();if(e.target.id==="fromRealSubmit"){$("#gameDialog").close();$("#submitDialog").showModal()}if(e.target.id==="memoryAgain")openMemory()});
+// Pintar el estado inicial de categorías incluso si aún no hay retos aprobados.
+renderChallenges("todos");
+
 // Los votos de retos reales los gestiona community.js y se guardan en Supabase.
 document.querySelectorAll(".filter").forEach(b=>b.addEventListener("click",()=>{document.querySelectorAll(".filter").forEach(x=>x.classList.remove("active"));b.classList.add("active");renderChallenges(b.dataset.filter)}));
 $("#exploreBtn").addEventListener("click",()=>$("#challenges").scrollIntoView({behavior:"smooth"}));
@@ -316,7 +319,6 @@ document.addEventListener("retoarena:retos-cargados", (event) => {
     // Evitar duplicados si el reto ya fue cargado.
     const existente = challenges.find((item) => item.id === id);
 
-    const esJuego = false;
     const category = ["extremo","comida","deporte","challenge","te-reto"].includes(reto.category) ? reto.category : "challenge";
 
     const retoActualizado = {
@@ -328,7 +330,7 @@ document.addEventListener("retoarena:retos-cargados", (event) => {
       art: category === "comida" ? "art-orange" : category === "deporte" ? "art-blue" : category === "extremo" ? "art-red" : category === "te-reto" ? "art-pink" : "art-purple",
       tag: categoryNames[category],
       players: "Reto aprobado",
-      action: esJuego ? "Jugar ahora" : "Ver reto",
+      action: "Ver reto",
       videoUrl: reto.video_url || ""
     };
 
