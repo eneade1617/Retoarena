@@ -122,7 +122,8 @@
       const editorAvatar = dialog.querySelector("#profileEditorAvatar");
       const editorName = profile.display_name || profile.username || "RA";
       editorAvatar.textContent = editorName.slice(0, 2).toUpperCase();
-      editorAvatar.style.backgroundImage = imageUrl ? 'url("' + imageUrl.replace(/["\\\\]/g, "") + '")' : "";
+      const editorImageUrl = safeImageUrl(profile.avatar_url || "");
+      editorAvatar.style.backgroundImage = editorImageUrl ? `url("${editorImageUrl.replace(/["\\]/g, "")}")` : "";
       editorAvatar.style.backgroundSize = "cover";
       editorAvatar.style.backgroundPosition = "center";
 
