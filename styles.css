@@ -476,3 +476,23 @@ body{background:radial-gradient(ellipse at 50% -18%,#4d155e 0,transparent 42%),r
 
 /* v28 — interacción social en vídeos de candidaturas */
 .direct-candidate-player{display:grid;gap:7px;margin:14px 0;border:1px solid #ffffff17;border-radius:14px;padding:8px;background:#090811}.direct-candidate-player video{width:100%;max-height:420px;aspect-ratio:9/12;object-fit:contain;background:#000;border-radius:9px}.direct-candidate-player a{padding:5px 3px;color:#f5a4dc;font-size:12px;font-weight:800;text-decoration:none}.candidate-social{margin-top:14px;padding-top:13px;border-top:1px solid #ffffff16}.candidate-reactions{display:flex;gap:7px;overflow-x:auto;padding-bottom:8px}.candidate-reactions button{flex:0 0 auto;border:1px solid #ffffff20;border-radius:999px;padding:9px 11px;background:#171321;color:#e8dcec;font-size:12px}.candidate-reactions button.selected{border-color:#f34cae;background:#48203f;color:#fff}.candidate-reactions button:disabled{opacity:.7}.candidate-comments{display:grid;gap:9px;max-height:240px;overflow:auto;padding:8px 2px}.candidate-comment{padding:10px 12px;border-radius:12px;background:#ffffff06;border:1px solid #ffffff0b}.candidate-comment strong{font-size:12px;color:#ff9bd5}.candidate-comment p{margin:4px 0;color:#eee5f4;font-size:13px;line-height:1.45;overflow-wrap:anywhere}.candidate-comment time{font-size:10px;color:#9f94b0}.candidate-comment-form{display:flex;gap:8px;margin-top:7px}.candidate-comment-form input{min-width:0;flex:1;border:1px solid #ffffff22;border-radius:12px;background:#090811;color:#fff;padding:12px;font:inherit;font-size:13px}.candidate-comment-form button{width:44px;flex:0 0 44px;border:0;border-radius:12px;background:linear-gradient(135deg,#f238a5,#873cff);color:white;font-size:20px}
+
+
+/* v29 — navegación móvil anclada durante el desplazamiento */
+@media(max-width:700px){
+  body{padding-bottom:calc(82px + env(safe-area-inset-bottom, 0px));}
+  .mobile-nav{
+    position:fixed!important;
+    top:auto!important;
+    bottom:0!important;
+    left:0!important;
+    right:0!important;
+    width:100%!important;
+    z-index:999!important;
+    transform:none!important;
+    margin:0!important;
+    box-sizing:border-box!important;
+    padding-bottom:calc(9px + env(safe-area-inset-bottom, 0px))!important;
+    will-change:transform;
+  }
+}
