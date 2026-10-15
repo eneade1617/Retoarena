@@ -60,7 +60,7 @@
     const feed = document.createElement("dialog");
     feed.id = "discoveryFeedDialog";
     feed.className = "discovery-feed-dialog";
-    feed.innerHTML = '<header class="discovery-feed-top"><button type="button" id="discoveryFeedClose" aria-label="Cerrar">‹</button><div><strong>DESCUBRIR</strong><small>VÍDEOS · FOTOS · RETOS</small></div><span class="discovery-feed-live"><i></i> COMUNIDAD</span></header><div class="discovery-feed-body"><div class="discovery-feed-intro"><span>LA ARENA SE MUEVE</span><h2>Descubre a los próximos protagonistas.</h2><p>Momentos, vídeos y retos compartidos por la comunidad.</p></div><div id="discoveryFeedItems" class="discovery-feed-items"><p class="discovery-feed-state">Cargando publicaciones…</p></div></div>';
+    feed.innerHTML = '<header class="discovery-feed-top"><button type="button" id="discoveryFeedClose" aria-label="Cerrar">‹</button><div><strong>DESCUBRIR</strong><small>VÍDEOS · FOTOS · RETOS</small></div><button type="button" id="openNotifications" class="discovery-notification-button" aria-label="Notificaciones">♧ <span id="notificationUnreadCount"></span></button><span class="discovery-feed-live"><i></i> COMUNIDAD</span></header><div class="discovery-feed-body"><div class="discovery-feed-intro"><span>LA ARENA SE MUEVE</span><h2>Descubre a los próximos protagonistas.</h2><p>Momentos, vídeos y retos compartidos por la comunidad.</p></div><div id="discoveryFeedItems" class="discovery-feed-items"><p class="discovery-feed-state">Cargando publicaciones…</p></div></div>';
     document.body.appendChild(feed);
   }
 
@@ -99,7 +99,7 @@
       const media = post.media_type === "video"
         ? '<video src="' + esc(mediaUrl) + '" controls playsinline preload="metadata"></video>'
         : '<img src="' + esc(mediaUrl) + '" loading="lazy" alt="Publicación de ' + esc(name) + '">';
-      return '<article class="discovery-post" data-discovery-user="' + esc(post.user_id) + '"><div class="discovery-post-author"><div class="discovery-post-avatar">' + avatar + '</div><div class="discovery-post-author-copy"><strong>' + esc(name) + '</strong><span>@' + esc(profile.username || "competidor") + ' · ' + Number(profile.points || 0).toLocaleString("es-ES") + ' pts</span></div><span class="discovery-post-badge">' + (post.media_type === "video" ? '▶ VÍDEO' : '✦ FOTO') + '</span></div><div class="discovery-post-media">' + media + '</div><div class="discovery-post-caption">' + (post.caption ? '<p>' + esc(post.caption) + '</p>' : '<p class="discovery-no-caption">Un nuevo momento en la arena.</p>') + '<span>' + new Date(post.created_at).toLocaleDateString("es-ES",{day:"2-digit",month:"short",year:"numeric"}) + '</span></div><button type="button" class="discovery-open-profile" data-open-profile="' + esc(post.user_id) + '">VER PERFIL DEL COMPETIDOR ↗</button></article>';
+      return '<article class="discovery-post" data-discovery-post="' + esc(post.id) + '" data-discovery-user="' + esc(post.user_id) + '"><div class="discovery-post-author"><div class="discovery-post-avatar">' + avatar + '</div><div class="discovery-post-author-copy"><strong>' + esc(name) + '</strong><span>@' + esc(profile.username || "competidor") + ' · ' + Number(profile.points || 0).toLocaleString("es-ES") + ' pts</span></div><span class="discovery-post-badge">' + (post.media_type === "video" ? '▶ VÍDEO' : '✦ FOTO') + '</span></div><div class="discovery-post-media">' + media + '</div><div class="discovery-post-caption">' + (post.caption ? '<p>' + esc(post.caption) + '</p>' : '<p class="discovery-no-caption">Un nuevo momento en la arena.</p>') + '<span>' + new Date(post.created_at).toLocaleDateString("es-ES",{day:"2-digit",month:"short",year:"numeric"}) + '</span></div><button type="button" class="discovery-open-profile" data-open-profile="' + esc(post.user_id) + '">VER PERFIL DEL COMPETIDOR ↗</button></article>';
     }).join("");
     await decorateSocialFeed(target, rows);
   }
@@ -118,7 +118,7 @@
     const comments = cc.error ? [] : (cc.data || []);
     const follows = new Set((ff.data || []).map(f => f.followed_id));
     for (const post of posts) {
-      const card = target.querySelector('[data-discovery-user="' + post.user_id + '"]');
+      const card = target.querySelector('[data-discovery-post="' + post.id + '"]');
       if (!card) continue;
       const postReactions = reactions.filter(r => r.post_id === post.id);
       const mine = postReactions.find(r => r.user_id === userId);
