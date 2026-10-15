@@ -209,7 +209,7 @@
   });
 
   db.auth.onAuthStateChange(() => {
-    loadProfile();
+    window.setTimeout(() => loadProfile(), 0);
   });
   loadProfile();
 })();
