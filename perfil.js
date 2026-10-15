@@ -35,10 +35,13 @@
       <label style="display:grid;gap:6px;font-size:12px">Presentación
         <textarea name="bio" maxlength="180" rows="3" placeholder="Cuéntale algo a la comunidad (máximo 180 caracteres)" style="width:100%;box-sizing:border-box;padding:12px;border-radius:10px;border:1px solid #39364f;background:#0f0f1f;color:white;resize:vertical"></textarea>
       </label>
-      <label style="display:grid;gap:6px;font-size:12px">URL de imagen de perfil (opcional)
+      <label style="display:grid;gap:6px;font-size:12px">Foto de perfil
+        <input name="avatar_file" type="file" accept="image/png,image/jpeg,image/webp" style="width:100%;box-sizing:border-box;padding:10px;border-radius:10px;border:1px solid #39364f;background:#0f0f1f;color:white">
+      </label>
+      <p style="margin:0;color:#aaa4c2;font-size:11px;line-height:1.5">Sube una imagen JPG, PNG o WebP de hasta 2 MB. También puedes pegar un enlace público opcional:</p>
+      <label style="display:grid;gap:6px;font-size:12px">URL de imagen (opcional)
         <input name="avatar_url" type="url" placeholder="https://..." style="width:100%;box-sizing:border-box;padding:12px;border-radius:10px;border:1px solid #39364f;background:#0f0f1f;color:white">
       </label>
-      <p style="margin:0;color:#aaa4c2;font-size:11px;line-height:1.5">Por ahora la imagen se añade mediante un enlace público; la subida directa de fotos la añadiremos más adelante para mantener el prototipo gratuito.</p>
       <button type="submit" style="padding:12px;border:0;border-radius:10px;background:#9657ee;color:white;font-weight:bold;cursor:pointer">Guardar perfil</button>
       <p id="profileFeedback" role="status" style="margin:0;overflow-wrap:anywhere;font-size:12px"></p>
     </form>
@@ -152,8 +155,17 @@
     const displayName = form.elements.display_name.value.trim();
     const bio = form.elements.bio.value.trim();
     const rawAvatar = form.elements.avatar_url.value.trim();
-    const avatarUrl = rawAvatar ? safeImageUrl(rawAvatar) : null;
+    const avatarFile = form.elements.avatar_file.files?.[0] || null;
+    let avatarUrl = rawAvatar ? safeImageUrl(rawAvatar) : null;
 
+    if (avatarFile && !["image/jpeg", "image/png", "image/webp"].includes(avatarFile.type)) {
+      feedback.textContent = "Usa una imagen JPG, PNG o WebP.";
+      return;
+    }
+    if (avatarFile && avatarFile.size > 2 * 1024 * 1024) {
+      feedback.textContent = "La imagen supera los 2 MB. Elige una foto más pequeña.";
+      return;
+    }
     if (rawAvatar && !avatarUrl) {
       feedback.textContent = "La URL de imagen debe comenzar por http:// o https://.";
       return;
@@ -163,6 +175,20 @@
     submit.disabled = true;
     feedback.textContent = "Guardando perfil…";
     try {
+      if (avatarFile) {
+        feedback.textContent = "Subiendo foto de perfil…";
+        const extension = avatarFile.type === "image/png" ? "png" : avatarFile.type === "image/webp" ? "webp" : "jpg";
+        const objectPath = activeUser.id + "/" + Date.now() + "." + extension;
+        const { error: uploadError } = await db.storage.from("retoarena-avatars").upload(objectPath, avatarFile, {
+          upsert: true,
+          contentType: avatarFile.type,
+          cacheControl: "3600"
+        });
+        if (uploadError) throw uploadError;
+        const { data: publicData } = db.storage.from("retoarena-avatars").getPublicUrl(objectPath);
+        avatarUrl = publicData.publicUrl;
+      }
+
       const { error } = await db.from("profiles").upsert({
         id: activeUser.id,
         username,
@@ -172,7 +198,9 @@
       }, { onConflict: "id" });
       if (error) throw error;
       feedback.textContent = "✓ Perfil guardado correctamente. Así lo verá la comunidad:";
+      form.elements.avatar_file.value = "";
       await loadProfile();
+      if (typeof window.retoArenaRefreshCommunity === "function") await window.retoArenaRefreshCommunity();
     } catch (error) {
       feedback.textContent = error.message || "No se pudo guardar el perfil.";
     } finally {
