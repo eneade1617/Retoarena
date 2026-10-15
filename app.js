@@ -1,10 +1,7 @@
 const challenges = [
-  {id:"quiz", type:"juego", title:"Duelo de cultura general", desc:"5 preguntas rápidas. ¿Cuántas aciertas?", icon:"🧠", art:"art-purple", tag:"MINIJUEGO", players:"42 jugando", action:"Jugar ahora"},
-  {id:"memory", type:"juego", title:"Memoria relámpago", desc:"Pon a prueba tu memoria visual.", icon:"🧩", art:"art-blue", tag:"MINIJUEGO", players:"28 jugando", action:"Jugar ahora"},
-  {id:"speed", type:"juego", title:"Reto de velocidad", desc:"Resuelve una secuencia contra reloj.", icon:"⚡", art:"art-pink", tag:"MINIJUEGO", players:"19 jugando", action:"Probar reto"},
-  {id:"dance", type:"real", title:"Tu mejor paso de baile", desc:"Comparte tu vídeo y deja que la comunidad lo descubra.", icon:"🕺", art:"art-pink", tag:"RETO REAL", players:"12 participantes", action:"Ver reto"},
-  {id:"talent", type:"real", title:"60 segundos de talento", desc:"Música, dibujo, magia o una habilidad sorprendente.", icon:"🎤", art:"art-purple", tag:"RETO REAL", players:"8 participantes", action:"Ver reto"},
-  {id:"photo", type:"real", title:"Foto creativa del día", desc:"Cuenta una historia con una sola imagen.", icon:"📸", art:"art-green", tag:"RETO REAL", players:"15 participantes", action:"Ver reto"}
+  {id:"quiz", type:"juego", title:"Duelo de cultura general", desc:"5 preguntas rápidas. ¿Cuántas aciertas?", icon:"🧠", art:"art-purple", tag:"MINIJUEGO", players:"Modo demostración", action:"Jugar ahora"},
+  {id:"memory", type:"juego", title:"Memoria relámpago", desc:"Pon a prueba tu memoria visual.", icon:"🧩", art:"art-blue", tag:"MINIJUEGO", players:"Modo demostración", action:"Jugar ahora"},
+  {id:"speed", type:"juego", title:"Reto de velocidad", desc:"Resuelve una secuencia contra reloj.", icon:"⚡", art:"art-pink", tag:"MINIJUEGO", players:"Modo demostración", action:"Probar reto"}
 ];
 const questions = [
   {q:"¿Cuál es el planeta más grande del sistema solar?", a:["Marte","Júpiter","Venus","Mercurio"], correct:1, fact:"Júpiter es el planeta más grande del sistema solar."},
@@ -13,12 +10,8 @@ const questions = [
   {q:"¿Cuánto es 9 × 7?", a:["56","63","72","67"], correct:1, fact:"9 por 7 es 63."},
   {q:"¿Qué gas absorben las plantas principalmente durante la fotosíntesis?", a:["Oxígeno","Helio","Dióxido de carbono","Hidrógeno"], correct:2, fact:"Las plantas absorben dióxido de carbono durante la fotosíntesis."}
 ];
-const community = [
-  {id:"c1",title:"Mi truco de fútbol",desc:"¿Cuántos toques seguidos puedes hacer?",creator:"Leo_10",icon:"⚽",votes:18},
-  {id:"c2",title:"Dibujo en 1 minuto",desc:"Un dibujo rápido, sin borrar.",creator:"NereaCrea",icon:"🎨",votes:14},
-  {id:"c3",title:"Imita una voz famosa",desc:"Adivina el personaje en los comentarios.",creator:"VozMisteriosa",icon:"🎭",votes:11},
-  {id:"c4",title:"Construcción imposible",desc:"La torre más alta usando solo papel.",creator:"PapelPro",icon:"🗼",votes:9}
-];
+// Los retos de la comunidad se cargan desde Supabase; no mostramos votos ficticios.
+const community = [];
 // No mostramos participantes ficticios en el ranking. La comunidad real se carga desde Supabase.
 const players = [];
 let votes = JSON.parse(localStorage.getItem("retoarena_votes") || "{}");
@@ -89,7 +82,12 @@ function renderCommunity() {
       pending: true
     }));
 
-  const combined = [...retosAprobados, ...community, ...pendientes];
+  const combined = [...retosAprobados];
+
+  if (!combined.length) {
+    $("#communityGrid").innerHTML = '<p style="color:var(--muted);font-size:13px">Todavía no hay retos aprobados. ¡Publica el primero y espera la revisión de moderación!</p>';
+    return;
+  }
 
   $("#communityGrid").innerHTML = combined.map(c =>
     `<article class="community-card">
@@ -98,9 +96,9 @@ function renderCommunity() {
         <h3>${escapeHtml(c.title)}</h3>
         <p>${escapeHtml(c.desc)}</p>
         <div class="community-foot">
-          <span class="creator">@${escapeHtml(c.creator)}${c.pending ? " · Pendiente" : ""}</span>
-          <button class="vote-btn" data-vote="${escapeHtml(c.id)}" ${c.pending || String(c.id).startsWith("supabase-") ? "disabled" : ""}>
-            ♡ ${c.votes + (votes[c.id] || 0)}
+          <span class="creator">@${escapeHtml(c.creator)}</span>
+          <button class="vote-btn" data-vote="${escapeHtml(c.id)}" disabled>
+            ♡ ${c.votes}
           </button>
         </div>
       </div>
