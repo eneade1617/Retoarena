@@ -357,9 +357,12 @@
   });
 
   db.auth.onAuthStateChange(() => {
-    loadProfiles();
-    loadVotes();
-    loadModerationPanel();
+    // Defer queries until Supabase has released its auth-state lock.
+    window.setTimeout(() => {
+      loadProfiles();
+      loadVotes();
+      loadModerationPanel();
+    }, 0);
   });
 
   loadProfiles();
