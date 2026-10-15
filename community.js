@@ -75,31 +75,37 @@
       '<div id="profileChallenges" class="public-profile-posts"><p style="color:var(--muted)">Cargando publicaciones…</p></div></div>';
     if (!profileDialog.open) profileDialog.showModal();
     const target = $("#profileChallenges", details);
-    const { data, error } = await db.from("challenges")
-      .select("id, title, description, video_url, created_at")
-      .eq("creator_id", profileId)
-      .eq("status", "approved")
-      .order("created_at", { ascending: false })
-      .limit(20);
+    const [{ data: challenges, error: challengeError }, { data: mediaPosts, error: mediaError }] = await Promise.all([
+      db.from("challenges").select("id, title, description, video_url, created_at").eq("creator_id", profileId).eq("status", "approved").order("created_at", { ascending: false }).limit(20),
+      db.from("profile_posts").select("id, media_url, media_type, caption, created_at").eq("user_id", profileId).eq("status", "published").order("created_at", { ascending: false }).limit(60)
+    ]);
     if (!profileDialog.open || !target) return;
-    if (error) {
-      target.innerHTML = '<p style="color:var(--muted)">No se pudieron cargar los retos de este participante.</p>';
-      console.warn("RetoArena: error cargando retos del perfil:", error.message);
+    if (challengeError || mediaError) {
+      target.innerHTML = '<p style="color:var(--muted)">No se pudieron cargar todas las publicaciones de este participante.</p>';
+      console.warn("RetoArena: error cargando publicaciones públicas:", challengeError?.message || mediaError?.message);
       return;
     }
+    const items = mediaPosts || [], challengeRows = challenges || [];
     const postCount = $("#profilePostCount", details);
-    if (postCount) postCount.textContent = String(data?.length || 0);
-    if (!data?.length) {
-      target.innerHTML = '<div style="grid-column:1/-1;padding:20px 14px;border:1px dashed #ffffff25;border-radius:13px;text-align:center"><div style="font-size:30px;margin-bottom:8px">🎬</div><strong style="display:block">Todavía no hay publicaciones</strong><p style="font-size:12px;color:#aaa3c1;line-height:1.6">Cuando publique retos aprobados, aparecerán aquí.</p></div>';
-      return;
-    }
-    target.innerHTML = data.map(challenge => {
+    if (postCount) postCount.textContent = String(items.length + challengeRows.length);
+    const mediaMarkup = items.map(post => {
+      const url = safeUrl(post.media_url || ""), caption = esc(post.caption || "");
+      const media = post.media_type === "video"
+        ? '<video src="' + esc(url) + '" controls playsinline preload="metadata" style="width:100%;aspect-ratio:4/5;object-fit:cover;background:#09080e"></video>'
+        : '<img src="' + esc(url) + '" loading="lazy" alt="" style="width:100%;aspect-ratio:4/5;object-fit:cover;background:#09080e">';
+      return '<article class="public-post-card">' + media + '<div class="public-post-copy"><p>' + caption + '</p><span style="font-size:10px;color:#aaa3c1">' + new Date(post.created_at).toLocaleDateString("es-ES", {day:"2-digit",month:"short"}) + '</span></div></article>';
+    }).join("");
+    const challengeMarkup = challengeRows.map(challenge => {
       const url = safeUrl(challenge.video_url || "");
-      return '<article class="public-post-card"><div class="public-post-art">🎬</div><div class="public-post-copy"><strong>' +
+      return '<article class="public-post-card"><div class="public-post-art">🏆</div><div class="public-post-copy"><strong>' +
         esc(challenge.title) + '</strong><p>' + esc(challenge.description || "Reto publicado en RetoArena") + '</p>' +
-        (url ? '<a href="' + esc(url) + '" target="_blank" rel="noopener noreferrer">VER VÍDEO ↗</a>' : '') +
+        (url ? '<a href="' + esc(url) + '" target="_blank" rel="noopener noreferrer">VER RETO ↗</a>' : '') +
         '</div></article>';
     }).join("");
+    target.innerHTML = mediaMarkup + challengeMarkup;
+    if (!items.length && !challengeRows.length) {
+      target.innerHTML = '<div style="grid-column:1/-1;padding:20px 14px;border:1px dashed #ffffff25;border-radius:13px;text-align:center"><div style="font-size:30px;margin-bottom:8px">🎬</div><strong style="display:block">Todavía no hay publicaciones</strong><p style="font-size:12px;color:#aaa3c1;line-height:1.6">Cuando publique fotos, vídeos o retos, aparecerán aquí.</p></div>';
+    }
   }
 
   document.addEventListener("click", event => {
