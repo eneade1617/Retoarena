@@ -49,7 +49,7 @@
   if (!$("#publicProfileDialog")) {
     const profileDialog = document.createElement("dialog");
     profileDialog.id = "publicProfileDialog";
-    profileDialog.style.cssText = "max-width:560px;width:calc(100% - 32px);max-height:82vh;overflow:auto;border:1px solid #554078;border-radius:20px;background:#151326;color:white;padding:24px";
+    profileDialog.style.cssText = "max-width:560px;width:calc(100% - 28px);max-height:86vh;overflow:auto;border:1px solid #ff4f9b66;border-radius:18px;background:#151020;color:white;padding:0";
     profileDialog.innerHTML = '<form method="dialog"><button aria-label="Cerrar perfil" style="float:right;background:none;color:white;border:0;font-size:24px;cursor:pointer">×</button></form><div id="publicProfileDetails"></div>';
     document.body.appendChild(profileDialog);
   }
@@ -62,14 +62,17 @@
     const name = profile.display_name || profile.username || "Jugador";
     const image = safeUrl(profile.avatar_url || "");
     const avatar = image
-      ? '<img src="' + esc(image) + '" alt="" style="width:68px;height:68px;border-radius:50%;object-fit:cover">'
-      : '<div style="width:68px;height:68px;border-radius:50%;display:grid;place-items:center;background:#7650bb;font-weight:bold;font-size:20px">' + esc(name.slice(0,2).toUpperCase()) + '</div>';
-    details.innerHTML = '<div style="display:flex;gap:14px;align-items:center;margin:8px 0 18px">' + avatar +
-      '<div><h2 style="margin:0 0 5px">' + esc(name) + '</h2><p style="margin:0;color:#c1afff">@' +
-      esc(profile.username || "jugador") + '</p><small style="color:var(--muted)">' +
-      Number(profile.points || 0).toLocaleString("es-ES") + ' puntos</small></div></div><p style="line-height:1.6;color:#ddd8ed">' +
-      esc(profile.bio || "Este participante todavía no ha añadido una presentación.") +
-      '</p><h3 style="margin-top:24px">Retos publicados</h3><div id="profileChallenges" style="display:grid;gap:10px"><p style="color:var(--muted)">Cargando retos…</p></div>';
+      ? '<img class="public-profile-avatar" src="' + esc(image) + '" alt="">'
+      : '<div class="public-profile-avatar" style="display:grid;place-items:center;font-size:25px;font-weight:900;color:white">' + esc(name.slice(0,2).toUpperCase()) + '</div>';
+    const bio = profile.bio || "Este competidor todavía no ha añadido una presentación.";
+    details.innerHTML = '<div class="public-profile-cover"></div><div class="public-profile-main">' +
+      '<div class="public-profile-identity">' + avatar + '<div style="min-width:0;padding-bottom:4px"><h2 class="public-profile-name">' + esc(name) +
+      '</h2><p class="public-profile-handle">@' + esc(profile.username || "jugador") + '</p><span style="font-size:12px;color:#c1afff;font-weight:800">◆ COMPETIDOR DE RETOARENA</span></div></div>' +
+      '<p class="public-profile-bio">' + esc(bio) + '</p>' +
+      '<div class="public-profile-stats"><div class="public-profile-stat"><strong>' + Number(profile.points || 0).toLocaleString("es-ES") +
+      '</strong><span>Puntos</span></div><div class="public-profile-stat"><strong id="profilePostCount">—</strong><span>Retos publicados</span></div><div class="public-profile-stat"><strong>RA</strong><span>Miembro</span></div></div>' +
+      '<div class="public-profile-posts-title"><strong>Su zona de retos</strong><span style="font-size:10px;color:#aaa3c1;letter-spacing:1px">PUBLICACIONES</span></div>' +
+      '<div id="profileChallenges" class="public-profile-posts"><p style="color:var(--muted)">Cargando publicaciones…</p></div></div>';
     if (!profileDialog.open) profileDialog.showModal();
     const target = $("#profileChallenges", details);
     const { data, error } = await db.from("challenges")
@@ -84,17 +87,18 @@
       console.warn("RetoArena: error cargando retos del perfil:", error.message);
       return;
     }
+    const postCount = $("#profilePostCount", details);
+    if (postCount) postCount.textContent = String(data?.length || 0);
     if (!data?.length) {
-      target.innerHTML = '<p style="color:var(--muted)">Todavía no tiene retos aprobados.</p>';
+      target.innerHTML = '<div style="grid-column:1/-1;padding:20px 14px;border:1px dashed #ffffff25;border-radius:13px;text-align:center"><div style="font-size:30px;margin-bottom:8px">🎬</div><strong style="display:block">Todavía no hay publicaciones</strong><p style="font-size:12px;color:#aaa3c1;line-height:1.6">Cuando publique retos aprobados, aparecerán aquí.</p></div>';
       return;
     }
     target.innerHTML = data.map(challenge => {
       const url = safeUrl(challenge.video_url || "");
-      return '<article style="padding:12px;border:1px solid var(--line);border-radius:12px;background:var(--panel2)"><strong>' +
-        esc(challenge.title) + '</strong><p style="margin:6px 0;color:var(--muted);font-size:13px">' +
-        esc(challenge.description || "Sin descripción") + '</p>' +
-        (url ? '<a href="' + esc(url) + '" target="_blank" rel="noopener noreferrer" style="color:#c1afff">Ver vídeo ↗</a>' : '') +
-        '</article>';
+      return '<article class="public-post-card"><div class="public-post-art">🎬</div><div class="public-post-copy"><strong>' +
+        esc(challenge.title) + '</strong><p>' + esc(challenge.description || "Reto publicado en RetoArena") + '</p>' +
+        (url ? '<a href="' + esc(url) + '" target="_blank" rel="noopener noreferrer">VER VÍDEO ↗</a>' : '') +
+        '</div></article>';
     }).join("");
   }
 
