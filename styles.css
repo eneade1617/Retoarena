@@ -114,3 +114,29 @@ body{background:radial-gradient(ellipse at 50% -22%,#43265e66 0,transparent 42%)
 footer{border-top-color:#ffffff12}
 @media(prefers-reduced-motion:reduce){*,*::before,*::after{scroll-behavior:auto!important;animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}}
 @media(max-width:700px){.topbar{height:60px}.hero{border-radius:21px}.section-heading{align-items:flex-start}.challenge-card:hover,.community-card:hover{transform:none}.challenge-art{min-height:125px}.filters{max-width:100%;overflow-x:auto}.filter{white-space:nowrap}.stats{border-radius:16px}}
+
+
+/* CINEMATIC REDESIGN V12 — intentionally visible changes */
+.hero{min-height:420px;padding:clamp(28px,5vw,68px);border-radius:30px;border-color:#a855f755;background:radial-gradient(ellipse at 78% 42%,#d946ef20 0,transparent 36%),radial-gradient(ellipse at 90% 70%,#2563eb24 0,transparent 34%),linear-gradient(115deg,#100d1f 0%,#171027 54%,#231031 100%);box-shadow:0 24px 80px #0005,0 0 60px #a855f712}
+.hero-copy{max-width:650px;position:relative;z-index:2}
+.hero .eyebrow{display:inline-flex;padding:9px 13px;border:1px solid #c084fc4d;border-radius:999px;background:#a855f71a;color:#e9d5ff;font-size:10px;letter-spacing:1.8px}
+.hero h1{font-size:clamp(42px,6.2vw,78px);line-height:.99;margin:24px 0 18px;max-width:760px;text-transform:uppercase;letter-spacing:-.065em}
+.hero-copy>p{max-width:490px;font-size:clamp(15px,1.5vw,18px);line-height:1.8;color:#c5bfdc}
+.hero .primary-btn{min-height:54px;padding:0 24px;border:1px solid #f0abfc70;border-radius:14px;background:linear-gradient(105deg,#9333ea,#db2777);box-shadow:0 12px 36px #c026d333;font-weight:850;letter-spacing:.4px}
+.hero-art{filter:saturate(1.2)}
+.hero-art .trophy{filter:drop-shadow(0 0 26px #d946ef66)}
+.stats{margin-top:28px;margin-bottom:60px;border:1px solid #a855f744;border-radius:20px;background:linear-gradient(110deg,#19132a,#111222 65%,#1c1229);box-shadow:0 18px 50px #0003}
+.stats>div{padding:25px 16px}
+.stats strong{font-size:clamp(24px,3vw,34px);text-shadow:0 0 24px #c084fc35}
+.section{margin-top:64px;margin-bottom:64px}
+.section-heading{margin-bottom:22px}
+.section-heading h2{font-size:clamp(25px,3vw,34px)}
+.filters{border-color:#a855f72b;background:#0d0b18}
+.filter.active{background:linear-gradient(120deg,#9333ea,#4c1d65);color:white}
+.challenge-card{border-radius:20px;border-color:#a855f72b;background:linear-gradient(155deg,#1b1730,#10101f)}
+.challenge-art{min-height:170px;background-image:radial-gradient(circle at 50% 60%,#a855f733,transparent 55%)}
+.challenge-art .emoji{font-size:52px}
+.play-btn{min-height:45px;border-radius:12px;background:linear-gradient(100deg,#6d28d9,#4c1d65);border-color:#c084fc55;font-weight:800}
+.arena-live{border-radius:26px;border-color:#c026d355;background:radial-gradient(ellipse at 50% 0%,#a21caf2c,transparent 55%),linear-gradient(140deg,#171124,#0d1020);padding:clamp(22px,4vw,42px)}
+.live-status{font-size:9px;letter-spacing:1px}
+@media(max-width:700px){.hero{min-height:0;padding:27px 20px;border-radius:22px}.hero h1{font-size:clamp(38px,11vw,54px)}.hero-copy>p{font-size:14px}.hero-art{min-height:200px}.stats{margin-bottom:42px}.stats>div{padding:18px 8px}.section{margin-top:44px;margin-bottom:44px}}
