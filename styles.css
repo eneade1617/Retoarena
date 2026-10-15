@@ -31,3 +31,19 @@
 .battle-rules-strip b{font-size:11px}.battle-rules-strip small{margin-top:3px;color:var(--muted);font-size:9px}
 .prototype-note{position:relative;z-index:1;margin:16px 0 0;color:#a49ab2;font-size:10px;line-height:1.6}
 @media(max-width:700px){.arena-live{padding:21px 16px;margin-top:0}.arena-live-head{display:block}.live-status{margin-top:16px}.battle-preview-grid{grid-template-columns:minmax(0,1fr) 34px minmax(0,1fr);gap:7px;margin-top:22px}.battle-preview{padding:12px 8px;min-height:205px}.battle-topline{display:grid;justify-content:center;font-size:7px}.fighter-avatar{width:61px;height:61px;font-size:30px;margin-top:26px}.battle-preview h3{font-size:13px}.battle-preview p{font-size:10px}.versus-mark{width:36px;height:36px;border-radius:12px;font-size:12px}.battle-rules-strip{grid-template-columns:1fr}.battle-rules-strip>div{padding:10px}.battle-rules-strip b{font-size:12px}.battle-rules-strip small{font-size:10px}}
+
+
+/* Competitive duel v1 */
+.duel-top{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.duel-score{display:inline-flex;align-items:center;justify-content:center;min-width:54px;padding:7px 10px;border:1px solid #59457f;background:#241b3c;border-radius:10px;color:#d8c5ff;font-size:12px;font-weight:900}
+.duel-timer{height:7px;background:#29243c;border-radius:99px;overflow:hidden;margin:16px 0 7px}
+#duelTimerBar{height:100%;width:100%;border-radius:99px;background:linear-gradient(90deg,#78edb1,#9c72ff,#fa63c5);transition:width 1s linear}
+.duel-timer-label{display:flex;justify-content:space-between;align-items:center;color:var(--muted);font-size:9px;font-weight:850;letter-spacing:1px}
+#duelTimerText{color:var(--green);font-size:12px;letter-spacing:0}
+#duelTimerText.urgent{color:#ff799f;animation:duelPulse .6s infinite alternate}
+.answer-btn{display:flex;align-items:center;gap:11px;min-height:49px;transition:transform .12s,border-color .12s,background .12s}
+.answer-btn:active{transform:scale(.99)}
+.answer-letter{display:grid;place-items:center;width:27px;height:27px;flex:0 0 27px;border:1px solid #4a3a67;border-radius:8px;background:#28203d;color:#cdb9ff;font-size:11px;font-weight:900}
+.duel-final-score{font-size:56px;line-height:1;font-weight:950;letter-spacing:-3px;color:#d3baff;margin:18px 0 8px;text-shadow:0 0 30px #9c72ff55}
+.duel-final-score small{font-size:20px;color:var(--muted);letter-spacing:0}
+@keyframes duelPulse{from{opacity:1}to{opacity:.55}}
