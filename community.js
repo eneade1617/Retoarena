@@ -105,6 +105,7 @@
           </div>
         </article>`;
     }).join("");
+    if (typeof window.renderCommunity === "function") window.renderCommunity();
   }
 
   let voteCounts = {};
