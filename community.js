@@ -64,7 +64,7 @@
     document.body.appendChild(feed);
   }
 
-  async function openDiscoveryFeed() {
+  async function openDiscoveryFeed(focusPostId = null) {
     const feed = $("#discoveryFeedDialog"), target = $("#discoveryFeedItems");
     if (!feed || !target) return;
     if (!feed.open) feed.showModal();
@@ -102,7 +102,19 @@
       return '<article class="discovery-post" data-discovery-post="' + esc(post.id) + '" data-discovery-user="' + esc(post.user_id) + '"><div class="discovery-post-author"><div class="discovery-post-avatar">' + avatar + '</div><div class="discovery-post-author-copy"><strong>' + esc(name) + '</strong><span>@' + esc(profile.username || "competidor") + ' · ' + Number(profile.points || 0).toLocaleString("es-ES") + ' pts</span></div><span class="discovery-post-badge">' + (post.media_type === "video" ? '▶ VÍDEO' : '✦ FOTO') + '</span></div><div class="discovery-post-media">' + media + '</div><div class="discovery-post-caption">' + (post.caption ? '<p>' + esc(post.caption) + '</p>' : '<p class="discovery-no-caption">Un nuevo momento en la arena.</p>') + '<span>' + new Date(post.created_at).toLocaleDateString("es-ES",{day:"2-digit",month:"short",year:"numeric"}) + '</span></div><button type="button" class="discovery-open-profile" data-open-profile="' + esc(post.user_id) + '">VER PERFIL DEL COMPETIDOR ↗</button></article>';
     }).join("");
     await decorateSocialFeed(target, rows);
+    if (focusPostId) {
+      const focused = [...target.querySelectorAll("[data-discovery-post]")].find(card => card.dataset.discoveryPost === String(focusPostId));
+      if (focused) {
+        window.setTimeout(() => focused.scrollIntoView({behavior:"smooth",block:"start"}), 120);
+        focused.classList.add("discovery-post-focused");
+        window.setTimeout(() => focused.classList.remove("discovery-post-focused"), 1800);
+      } else notify("No se encontró esa publicación en el feed.");
+    }
   }
+
+  window.retoArenaOpenPost = function(postId) {
+    openDiscoveryFeed(postId || null);
+  };
 
   async function decorateSocialFeed(target, posts) {
     const { data: sessionData } = await db.auth.getSession();
