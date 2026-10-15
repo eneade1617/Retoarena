@@ -140,3 +140,80 @@ footer{border-top-color:#ffffff12}
 .arena-live{border-radius:26px;border-color:#c026d355;background:radial-gradient(ellipse at 50% 0%,#a21caf2c,transparent 55%),linear-gradient(140deg,#171124,#0d1020);padding:clamp(22px,4vw,42px)}
 .live-status{font-size:9px;letter-spacing:1px}
 @media(max-width:700px){.hero{min-height:0;padding:27px 20px;border-radius:22px}.hero h1{font-size:clamp(38px,11vw,54px)}.hero-copy>p{font-size:14px}.hero-art{min-height:200px}.stats{margin-bottom:42px}.stats>div{padding:18px 8px}.section{margin-top:44px;margin-bottom:44px}}
+
+
+/* RETOARENA V13 — nueva dirección visual: arena competitiva, no landing genérica */
+:root{--bg:#080810;--panel:#11111d;--panel2:#191827;--line:#30243e;--purple:#b34cff;--pink:#ff347f;--cyan:#5be7ff}
+body{background:radial-gradient(ellipse at 50% -18%,#4d155e 0,transparent 42%),radial-gradient(ellipse at 100% 30%,#171a4b 0,transparent 35%),#080810}
+.topbar{background:#080810e8;border-bottom-color:#ff4f9b24}
+.brand-mark{border-radius:10px;background:linear-gradient(145deg,#ff4d9b,#873cff);box-shadow:0 0 24px #ff347f50}
+.hero{position:relative;isolation:isolate;overflow:hidden;min-height:560px;margin-top:18px;padding:clamp(25px,5vw,64px);grid-template-columns:1.08fr .92fr;border:1px solid #ff4f9b50;border-radius:28px;background:linear-gradient(120deg,#110b1b 0%,#160d25 48%,#090c1b 100%);box-shadow:0 24px 90px #0008,inset 0 0 90px #b32d7710}
+.hero:before{content:"";position:absolute;z-index:-1;inset:0;background:repeating-linear-gradient(118deg,transparent 0 48px,#ffffff04 49px 50px),radial-gradient(ellipse at 76% 45%,#ff347f28,transparent 35%),radial-gradient(ellipse at 86% 80%,#643aff2a,transparent 36%)}
+.hero:after{content:"RA / 01";position:absolute;right:22px;top:14px;color:#ffffff0a;font-size:clamp(90px,18vw,220px);font-weight:1000;letter-spacing:-.1em;line-height:1;pointer-events:none;z-index:-1}
+.hero .eyebrow{border-color:#ff4f9b70;background:#ff347f12;color:#ffc8e1}
+.hero h1{font-size:clamp(46px,6vw,80px);letter-spacing:-.075em;line-height:.94;text-wrap:balance;margin:28px 0 20px}
+.gradient-text{background:linear-gradient(100deg,#ff79c0 0%,#c46bff 52%,#6ee7ff 100%);-webkit-background-clip:text;background-clip:text;color:transparent}
+.hero-copy>p{font-size:clamp(15px,1.35vw,18px);max-width:440px;color:#d0c6df;line-height:1.8}
+.hero .primary-btn{min-height:58px;border-radius:12px;background:linear-gradient(100deg,#a42cff,#ff287d);border:1px solid #ffb1df88;box-shadow:0 0 0 5px #ff347f0c,0 14px 38px #ff287d38;text-transform:uppercase;letter-spacing:.6px}
+.hero .primary-btn span{font-size:22px}
+.hero-art{height:390px;transform:scale(1.05)}
+.hero-art:before{content:"";position:absolute;width:330px;height:330px;border-radius:50%;background:radial-gradient(circle,#ff2d8730 0%,#743cff18 42%,transparent 70%);filter:blur(5px)}
+.orbit{border-color:#ff6bb52d;box-shadow:0 0 22px #b34cff0b}
+.orbit-one{width:360px;height:260px;border-width:2px;transform:rotate(-28deg)}
+.orbit-two{width:270px;height:380px;border-color:#5be7ff25}
+.trophy{width:178px;height:178px;border-radius:38px;font-size:86px;background:linear-gradient(145deg,#3b1649,#17162e 70%);border:1px solid #ff91d466;box-shadow:0 0 0 10px #ff4f9b09,0 0 65px #f02b9250,inset 0 0 35px #ff4f9b20;transform:rotate(-9deg)}
+.floating-card{background:#100d1ff2;border-color:#ff78bd55;box-shadow:0 12px 40px #0008,0 0 22px #ff347f12;border-radius:12px}
+.card-top{top:24px;left:-1%}.card-bottom{bottom:22px;right:-1%}
+.stats{border-radius:14px;border-color:#ff4f9b38;background:linear-gradient(100deg,#181020,#0d1020);box-shadow:0 18px 60px #0005}
+.stats>div{padding:24px 14px}
+.stats strong{color:#fff;text-shadow:0 0 22px #ff347f40}
+.stats span{letter-spacing:.3px}
+.section-heading h2{letter-spacing:-1.5px}
+.challenge-card{position:relative;border-radius:14px;border-color:#ffffff17;background:linear-gradient(155deg,#191425,#0f101b);box-shadow:0 15px 35px #0002}
+.challenge-card:hover{transform:translateY(-5px);border-color:#ff4f9b88;box-shadow:0 20px 45px #ff347f12}
+.challenge-art{height:185px;background-image:linear-gradient(140deg,#ffffff08,transparent 45%),radial-gradient(circle at 50% 75%,#ff347f26,transparent 55%)}
+.art-purple{background-color:#241130}.art-blue{background-color:#111e32}.art-pink{background-color:#2a1125}.art-green{background-color:#102a29}
+.challenge-art .emoji{font-size:62px;filter:drop-shadow(0 0 18px #ff4f9b35)}
+.tag{border-radius:4px;letter-spacing:1px}
+.play-btn{border-radius:8px;background:#1d142b;border-color:#b34cff70}
+.play-btn:hover{background:linear-gradient(100deg,#6923a6,#a21d58)}
+.arena-live{border-radius:16px;border-color:#ff4f9b45;background:linear-gradient(130deg,#170e1c,#0c1020);box-shadow:0 22px 70px #0005}
+.battle-preview{border-radius:14px!important;background:#100e1b!important}
+.battle-red{border-color:#ff347f66!important}.battle-blue{border-color:#5be7ff55!important}
+.versus-mark{border-radius:8px!important;background:#ff347f!important;color:#fff!important;box-shadow:0 0 28px #ff347f55}
+.leaderboard{border-radius:14px;background:#11111d}
+.leader-row{padding:17px 0}
+.mobile-nav{background:#080810f2;border-top-color:#ff4f9b35}
+.nav-item.active{color:#ffb0df}
+.nav-item.active span{filter:drop-shadow(0 0 7px #ff347f88)}
+.modal{border-radius:14px;border-color:#ff4f9b55;background:#100e1b}
+@media(max-width:700px){
+  main{padding:0 12px}
+  .hero{display:flex;flex-direction:column;align-items:stretch;gap:0;margin-top:10px;padding:24px 18px 8px;min-height:0;border-radius:19px}
+  .hero-copy{width:100%}
+  .hero .eyebrow{font-size:9px;letter-spacing:1.25px;padding:8px 10px}
+  .hero h1{font-size:clamp(39px,10.5vw,53px);letter-spacing:-.07em;line-height:.97;margin:23px 0 17px}
+  .hero-copy>p{font-size:14px;line-height:1.7;margin-bottom:14px}
+  .hero .primary-btn{width:100%;min-height:58px;justify-content:space-between;padding:0 17px;font-size:13px}
+  .hero-art{height:255px;min-height:255px;width:100%;margin-top:5px;transform:none;order:2}
+  .hero-art:before{width:260px;height:260px}
+  .trophy{width:132px;height:132px;font-size:65px;border-radius:30px}
+  .orbit-one{width:280px;height:200px}.orbit-two{width:210px;height:270px}
+  .card-top{top:12px;left:0}.card-bottom{bottom:10px;right:0}
+  .floating-card{padding:9px 10px;max-width:78%}
+  .floating-card b{font-size:10px}.floating-card small{font-size:9px}
+  .stats{margin-top:14px;border-radius:12px}
+  .stats>div{padding:16px 5px}.stats strong{font-size:21px}.stats span{font-size:9px;line-height:1.3}
+  .section{margin-top:40px;margin-bottom:44px}
+  .challenge-grid{gap:9px}
+  .challenge-art{height:130px;min-height:130px}
+  .challenge-art .emoji{font-size:49px}
+  .challenge-body{padding:11px}
+  .challenge-body h3{font-size:12px}
+  .challenge-body p{font-size:10px}
+  .arena-live{padding:19px 15px;margin-top:0}
+  .arena-live-head{display:block}
+  .live-status{margin-top:14px;white-space:normal;line-height:1.5}
+  .battle-preview-grid{gap:8px}
+}
+@media(min-width:701px){.hero{margin-top:22px}.hero-art{min-width:0}}
