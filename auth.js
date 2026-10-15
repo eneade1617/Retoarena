@@ -93,12 +93,25 @@
       user.user_metadata?.username || user.email?.split("@")[0] || "Jugador"
     ).slice(0, 30);
 
-const { error } = await db.from("profiles").upsert(
-  { id: user.id, username: name },
-  { onConflict: "id" }
-);
+    const { data: existing, error: readError } = await db
+      .from("profiles")
+      .select("id")
+      .eq("id", user.id)
+      .maybeSingle();
 
-    if (error) console.warn("Perfil pendiente de crear:", error.message);
+    if (readError) {
+      console.warn("No se pudo comprobar el perfil:", readError.message);
+      return;
+    }
+
+    // Crear el perfil solo si no existe para conservar el nombre personalizado.
+    if (!existing) {
+      const { error } = await db.from("profiles").insert({
+        id: user.id,
+        username: name
+      });
+      if (error) console.warn("Perfil pendiente de crear:", error.message);
+    }
   }
 
   async function refreshSession() {
