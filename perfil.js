@@ -42,12 +42,38 @@
       <button type="submit" style="padding:12px;border:0;border-radius:10px;background:#9657ee;color:white;font-weight:bold;cursor:pointer">Guardar perfil</button>
       <p id="profileFeedback" role="status" style="margin:0;overflow-wrap:anywhere;font-size:12px"></p>
     </form>
+    <section id="profilePreview" style="display:none;margin-top:18px;padding:16px;border:1px solid #39364f;border-radius:14px;background:#0f0f1f">
+      <p style="margin:0 0 10px;color:#c5a1ff;font-size:10px;font-weight:bold;letter-spacing:1px">VISTA PREVIA DE TU PERFIL</p>
+      <div style="display:flex;align-items:center;gap:12px">
+        <div id="profilePreviewAvatar" style="width:48px;height:48px;flex:0 0 48px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:#7650bb;font-weight:bold;overflow:hidden">RA</div>
+        <div style="min-width:0">
+          <strong id="profilePreviewName" style="display:block;overflow-wrap:anywhere"></strong>
+          <span id="profilePreviewUsername" style="color:#aaa4c2;font-size:12px"></span>
+        </div>
+      </div>
+      <p id="profilePreviewBio" style="font-size:13px;line-height:1.5;color:#ddd8ed;white-space:pre-wrap;overflow-wrap:anywhere"></p>
+    </section>
   `;
   document.body.appendChild(dialog);
 
   const form = dialog.querySelector("#profileForm");
   const feedback = dialog.querySelector("#profileFeedback");
+  const preview = dialog.querySelector("#profilePreview");
   let activeUser = null;
+
+  function renderPreview(profile) {
+    preview.style.display = "block";
+    const displayName = profile.display_name || profile.username || "Jugador de RetoArena";
+    dialog.querySelector("#profilePreviewName").textContent = displayName;
+    dialog.querySelector("#profilePreviewUsername").textContent = "@" + (profile.username || "");
+    dialog.querySelector("#profilePreviewBio").textContent = profile.bio || "Todavía no has añadido una presentación.";
+    const previewAvatar = dialog.querySelector("#profilePreviewAvatar");
+    const imageUrl = safeImageUrl(profile.avatar_url || "");
+    previewAvatar.style.backgroundImage = imageUrl ? 'url("' + imageUrl.replace(/["\\\\]/g, "") + '")' : "";
+    previewAvatar.style.backgroundSize = "cover";
+    previewAvatar.style.backgroundPosition = "center";
+    previewAvatar.textContent = imageUrl ? "" : displayName.slice(0, 2).toUpperCase();
+  }
 
   function safeImageUrl(value) {
     try {
@@ -88,6 +114,7 @@
       form.elements.display_name.value = profile.display_name || "";
       form.elements.bio.value = profile.bio || "";
       form.elements.avatar_url.value = profile.avatar_url || "";
+      renderPreview(profile);
 
       const imageUrl = safeImageUrl(profile.avatar_url || "");
       if (imageUrl) {
@@ -144,9 +171,8 @@
         avatar_url: avatarUrl
       }, { onConflict: "id" });
       if (error) throw error;
-      feedback.textContent = "Perfil guardado correctamente.";
+      feedback.textContent = "✓ Perfil guardado correctamente. Así lo verá la comunidad:";
       await loadProfile();
-      setTimeout(() => { if (dialog.open) dialog.close(); }, 700);
     } catch (error) {
       feedback.textContent = error.message || "No se pudo guardar el perfil.";
     } finally {
