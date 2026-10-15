@@ -78,6 +78,7 @@
       </section>
       <div class="own-profile-gallery-head"><div><span class="own-profile-overline">TU CONTENIDO</span><h2>Mis publicaciones</h2></div><span id="ownProfileGalleryCount">0 posts</span></div>
       <div class="own-profile-tabs"><button type="button" class="active" data-profile-filter="all">Todo</button><button type="button" data-profile-filter="image">Fotos</button><button type="button" data-profile-filter="video">Vídeos</button></div>
+      <p class="own-profile-gallery-hint">Toca una foto para abrir la publicación y ver sus reacciones y comentarios.</p>
       <div id="ownProfileGallery" class="own-profile-gallery"></div>
     </section>`;
   document.body.appendChild(ownProfileDialog);
