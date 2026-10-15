@@ -573,7 +573,7 @@
       if (!file) { preview.hidden = true; preview.innerHTML = ""; return; }
       if (!["video/mp4","video/quicktime","video/webm"].includes(file.type) || file.size > 45*1024*1024) {
         videoInput.value = ""; preview.hidden = true; preview.innerHTML = "";
-        if (feedback) feedback.textContent = "Elige MP4, MOV o WebM de máximo 45 MB.";
+        const message = $("#submitFeedback"); if (message) { message.classList.remove("hidden"); message.textContent = "Elige MP4, MOV o WebM de máximo 45 MB."; }
         return;
       }
       previewUrl = URL.createObjectURL(file);
