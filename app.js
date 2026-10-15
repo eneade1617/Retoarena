@@ -1,7 +1,7 @@
 const challenges = [
-  {id:"quiz", type:"juego", title:"Duelo de cultura general", desc:"5 preguntas rápidas. ¿Cuántas aciertas?", icon:"🧠", art:"art-purple", tag:"MINIJUEGO", players:"Modo demostración", action:"Jugar ahora"},
-  {id:"memory", type:"juego", title:"Memoria relámpago", desc:"Pon a prueba tu memoria visual.", icon:"🧩", art:"art-blue", tag:"MINIJUEGO", players:"Modo demostración", action:"Jugar ahora"},
-  {id:"speed", type:"juego", title:"Reto de velocidad", desc:"Resuelve una secuencia contra reloj.", icon:"⚡", art:"art-pink", tag:"MINIJUEGO", players:"Modo demostración", action:"Probar reto"}
+  {id:"quiz", type:"juego", title:"Duelo relámpago", desc:"5 rondas · 20 segundos por respuesta · hasta 25 puntos.", icon:"⚔️", art:"art-purple", tag:"COMPETITIVO", players:"3 partidas al día", action:"Entrar al duelo", competitive:true},
+  {id:"memory", type:"juego", title:"Memoria relámpago", desc:"Entrena tu memoria y supera tu propio récord.", icon:"🧩", art:"art-blue", tag:"ENTRENAMIENTO", players:"Sin puntos de ranking", action:"Entrenar"},
+  {id:"speed", type:"juego", title:"Reto de velocidad", desc:"Memoriza la secuencia y pon a prueba tus reflejos.", icon:"⚡", art:"art-pink", tag:"ENTRENAMIENTO", players:"Sin puntos de ranking", action:"Entrenar"}
 ];
 const questions = [
   {q:"¿Cuál es el planeta más grande del sistema solar?", a:["Marte","Júpiter","Venus","Mercurio"], correct:1, fact:"Júpiter es el planeta más grande del sistema solar."},
@@ -18,6 +18,9 @@ let votes = JSON.parse(localStorage.getItem("retoarena_votes") || "{}");
 let localSubmissions = JSON.parse(localStorage.getItem("retoarena_submissions") || "[]");
 let points = Number(localStorage.getItem("retoarena_points") || "0");
 let gameState = {index:0, score:0, answered:false};
+let quizTimerInterval = null;
+let quizTimeoutHandle = null;
+
 let deferredInstallPrompt = null;
 
 const $ = (sel) => document.querySelector(sel);
@@ -45,7 +48,7 @@ function renderChallenges(filter = "todos") {
         <p>${escapeHtml(c.desc)}</p>
         <div class="card-meta">
           <span>${escapeHtml(c.players || "Disponible")}</span>
-          <span>${c.type === "real" ? "Comunidad" : "Puntos demo"}</span>
+          <span>${c.type === "real" ? "Comunidad" : c.competitive ? "Puntos reales" : "Práctica"}</span>
         </div>
         <button class="play-btn" data-challenge="${c.id}">
           ${escapeHtml(c.action || "Ver reto")} <span>›</span>
@@ -128,21 +131,38 @@ async function startQuiz(){
   const { data: gameSessionId, error } = await db.rpc("retoarena_start_quiz");
   if (error || !gameSessionId) {
     console.error("RetoArena: no se pudo iniciar la partida:", error?.message);
-    toast("No se pudo iniciar la partida. Inténtalo de nuevo.");
+    toast(error?.message || "No se pudo iniciar la partida. Inténtalo de nuevo.");
     return;
   }
   gameState={index:0,score:0,answered:false,sessionId:gameSessionId,pointsAwarded:0,pointsTotal:null};
   showQuestion();
   $("#gameDialog").showModal();
 }
+function stopQuizTimer(){
+  if(quizTimerInterval)clearInterval(quizTimerInterval);
+  if(quizTimeoutHandle)clearTimeout(quizTimeoutHandle);
+  quizTimerInterval=null;quizTimeoutHandle=null;
+}
 function showQuestion(){
+  stopQuizTimer();
   if(gameState.index>=questions.length){finishQuiz();return}
   const q=questions[gameState.index];
-  $("#gameContent").innerHTML=`<span class="game-kicker">ARENA DIGITAL · PREGUNTA ${gameState.index+1}/${questions.length}</span><h2>Duelo de cultura general</h2><div class="game-question">${q.q}</div><div class="answer-list">${q.a.map((a,i)=>`<button class="answer-btn" data-answer="${i}">${String.fromCharCode(65+i)}. ${a}</button>`).join("")}</div><div id="answerFeedback"></div><p class="form-hint">Partida competitiva: el servidor valida tus respuestas y guarda los puntos en tu perfil.</p>`;
+  $("#gameContent").innerHTML=`<div class="duel-top"><span class="game-kicker">⚔ DUELO RELÁMPAGO · RONDA ${gameState.index+1}/5</span><span class="duel-score">${gameState.score} / 5</span></div><h2>Responde bajo presión</h2><div class="duel-timer"><div id="duelTimerBar"></div></div><div class="duel-timer-label"><span>TIEMPO RESTANTE</span><strong id="duelTimerText">20 s</strong></div><div class="game-question">${q.q}</div><div class="answer-list">${q.a.map((a,i)=>`<button class="answer-btn" data-answer="${i}"><span class="answer-letter">${String.fromCharCode(65+i)}</span>${a}</button>`).join("")}</div><div id="answerFeedback"></div><p class="form-hint">Una respuesta por ronda. Si se agota el tiempo, no suma acierto. Máximo 3 duelos competitivos al día.</p>`;
+  let remaining=20;
+  const updateTimer=()=>{
+    const text=$("#duelTimerText"),bar=$("#duelTimerBar");
+    if(text)text.textContent=remaining+" s";
+    if(bar)bar.style.width=(remaining/20*100)+"%";
+    if(remaining<=5 && text)text.classList.add("urgent");
+  };
+  updateTimer();
+  quizTimerInterval=setInterval(()=>{remaining--;updateTimer();if(remaining<=0)stopQuizTimer()},1000);
+  quizTimeoutHandle=setTimeout(()=>{if(!gameState.answered)answerQuestion(-1)},20000);
 }
 async function answerQuestion(index){
   if(gameState.answered)return;
   gameState.answered=true;
+  stopQuizTimer();
   document.querySelectorAll("[data-answer]").forEach(b=>b.disabled=true);
   const db = window.retoArenaSupabase;
   const { data, error } = await db.rpc("retoarena_submit_quiz_answer", {
@@ -166,12 +186,13 @@ async function answerQuestion(index){
     if(i===q.correct)b.classList.add("correct");
     else if(i===index)b.classList.add("wrong");
   });
-  $("#answerFeedback").innerHTML=`<div class="game-result">${correct?"✅ ¡Correcto!":"💡 No pasa nada."} ${q.fact}<br><button class="primary-btn full" id="nextQuestion">${gameState.index===questions.length-1?"Ver resultado":"Siguiente pregunta"} ↗</button></div>`;
+  $("#answerFeedback").innerHTML=`<div class="game-result">${data.timed_out?"⏱ Se acabó el tiempo.":correct?"✅ ¡Correcto!":"💡 Respuesta incorrecta."} ${q.fact}<br><button class="primary-btn full" id="nextQuestion">${gameState.index===questions.length-1?"Ver resultado":"Siguiente ronda"} ↗</button></div>`;
 }
 function finishQuiz(){
+  stopQuizTimer();
   const awarded=Number(gameState.pointsAwarded||0);
   const total=gameState.pointsTotal===null?"actualiza tu perfil":Number(gameState.pointsTotal).toLocaleString("es-ES")+" puntos";
-  $("#gameContent").innerHTML=`<span class="game-kicker">FIN DEL RETO</span><h2>¡Bien jugado!</h2><div class="game-result">Has acertado <strong>${gameState.score} de 5 preguntas</strong>.<br>Has ganado <strong>${awarded} puntos reales</strong> en esta partida.<br>Tu total en Supabase: <strong>${total}</strong>.<br><br>Los puntos se validan en el servidor y se guardan en tu perfil.</div><button class="primary-btn full" id="playAgain">Volver a jugar ↻</button>`;
+  $("#gameContent").innerHTML=`<span class="game-kicker">RESULTADO OFICIAL</span><h2>${gameState.score>=4?"¡Dominaste la arena!":gameState.score>=2?"Buen combate.":"El próximo duelo es tuyo."}</h2><div class="duel-final-score">${gameState.score}<small>/ 5</small></div><div class="game-result">Has acertado <strong>${gameState.score} de 5 rondas</strong>.<br>Recompensa: <strong>+${awarded} puntos</strong>.<br>Tu total en Supabase: <strong>${total}</strong>.<br><br>Los puntos se validan en el servidor. Tienes hasta 3 duelos competitivos al día.</div><button class="primary-btn full" id="playAgain">Jugar otro duelo ↻</button>`;
 }
 
 
@@ -270,9 +291,9 @@ function openMemory(){
   let shuffled=icons.map((v,i)=>({v,k:i})).sort(()=>Math.random()-.5), opened=[],matched=0,locked=false;
   $("#gameContent").innerHTML=`<span class="game-kicker">ARENA DIGITAL</span><h2>Memoria relámpago</h2><p class="modal-intro">Encuentra las seis parejas. Toca dos tarjetas para descubrirlas.</p><div class="memory-grid">${shuffled.map((x,i)=>`<button class="memory-card" data-mem="${i}" aria-label="Tarjeta oculta">?</button>`).join("")}</div><div id="memoryStatus" class="game-result">Parejas: 0/6</div>`;
   $("#gameDialog").showModal();
-  $("#gameContent").onclick=(e)=>{const b=e.target.closest("[data-mem]");if(!b||locked||b.classList.contains("matched")||opened.includes(Number(b.dataset.mem)))return;const i=Number(b.dataset.mem);b.textContent=shuffled[i].v;b.classList.add("revealed");opened.push(i);if(opened.length===2){const [a,z]=opened;if(shuffled[a].v===shuffled[z].v){document.querySelectorAll(`[data-mem="${a}"],[data-mem="${z}"]`).forEach(x=>x.classList.add("matched"));matched++;opened=[];$("#memoryStatus").textContent=`Parejas: ${matched}/6`;if(matched===6){points+=100;localStorage.setItem("retoarena_points",String(points));$("#memoryStatus").innerHTML="🎉 ¡Completado! +100 puntos demo. <button class='play-btn' id='memoryAgain'>Jugar otra vez</button>";renderLeaderboard()}}else{locked=true;setTimeout(()=>{[a,z].forEach(n=>{const el=document.querySelector(`[data-mem="${n}"]`);if(el){el.textContent="?";el.classList.remove("revealed")}});opened=[];locked=false},700)}}};
+  $("#gameContent").onclick=(e)=>{const b=e.target.closest("[data-mem]");if(!b||locked||b.classList.contains("matched")||opened.includes(Number(b.dataset.mem)))return;const i=Number(b.dataset.mem);b.textContent=shuffled[i].v;b.classList.add("revealed");opened.push(i);if(opened.length===2){const [a,z]=opened;if(shuffled[a].v===shuffled[z].v){document.querySelectorAll(`[data-mem="${a}"],[data-mem="${z}"]`).forEach(x=>x.classList.add("matched"));matched++;opened=[];$("#memoryStatus").textContent=`Parejas: ${matched}/6`;if(matched===6){$("#memoryStatus").innerHTML="🎉 ¡Completado! Entrenamiento finalizado; este modo no concede puntos de ranking. <button class='play-btn' id='memoryAgain'>Entrenar otra vez</button>";}}else{locked=true;setTimeout(()=>{[a,z].forEach(n=>{const el=document.querySelector(`[data-mem="${n}"]`);if(el){el.textContent="?";el.classList.remove("revealed")}});opened=[];locked=false},700)}}};
 }
-$("#challengeGrid").addEventListener("click",e=>{const b=e.target.closest("[data-challenge]");if(!b)return;const id=b.dataset.challenge;if(id==="quiz")startQuiz();else if(id==="memory")openMemory();else if(id==="speed"){let seq=Array.from({length:5},()=>Math.floor(Math.random()*9)+1);$("#gameContent").innerHTML=`<span class="game-kicker">ARENA DIGITAL</span><h2>Reto de velocidad</h2><p class="modal-intro">Memoriza esta secuencia durante 3 segundos y luego introdúcela.</p><div class="game-result" id="sequence">${seq.join(" · ")}</div><form id="speedForm" class="submit-form"><label>Escribe los números en orden<input name="sequence" required inputmode="numeric" pattern="[0-9 ]+" placeholder="Ej. 3 5 1 8 2"></label><button class="primary-btn full">Comprobar ↗</button></form><div id="speedResult"></div>`;$("#gameDialog").showModal();setTimeout(()=>{const s=$("#sequence");if(s)s.textContent="Secuencia oculta";},3000);$("#gameContent").onsubmit=(ev)=>{if(ev.target.id!=="speedForm")return;ev.preventDefault();const val=new FormData(ev.target).get("sequence").replace(/\s/g,"");const ok=val===seq.join("");if(ok){points+=100;localStorage.setItem("retoarena_points",String(points));renderLeaderboard()}$("#speedResult").innerHTML=`<div class="game-result">${ok?"⚡ ¡Correcto! +100 puntos demo.":"La secuencia era "+seq.join("")+". ¡Inténtalo de nuevo!"}</div>`;};}else openRealChallenge(id)});
+$("#challengeGrid").addEventListener("click",e=>{const b=e.target.closest("[data-challenge]");if(!b)return;const id=b.dataset.challenge;if(id==="quiz")startQuiz();else if(id==="memory")openMemory();else if(id==="speed"){let seq=Array.from({length:5},()=>Math.floor(Math.random()*9)+1);$("#gameContent").innerHTML=`<span class="game-kicker">ARENA DIGITAL</span><h2>Reto de velocidad</h2><p class="modal-intro">Memoriza esta secuencia durante 3 segundos y luego introdúcela.</p><div class="game-result" id="sequence">${seq.join(" · ")}</div><form id="speedForm" class="submit-form"><label>Escribe los números en orden<input name="sequence" required inputmode="numeric" pattern="[0-9 ]+" placeholder="Ej. 3 5 1 8 2"></label><button class="primary-btn full">Comprobar ↗</button></form><div id="speedResult"></div>`;$("#gameDialog").showModal();setTimeout(()=>{const s=$("#sequence");if(s)s.textContent="Secuencia oculta";},3000);$("#gameContent").onsubmit=(ev)=>{if(ev.target.id!=="speedForm")return;ev.preventDefault();const val=new FormData(ev.target).get("sequence").replace(/\s/g,"");const ok=val===seq.join("");$("#speedResult").innerHTML=`<div class="game-result">${ok?"⚡ ¡Correcto! Secuencia completada. Este modo es entrenamiento y no suma puntos de ranking.":"La secuencia era "+seq.join("")+". ¡Entrena y vuelve a intentarlo!"}</div>`;};}else openRealChallenge(id)});
 $("#gameContent").addEventListener("click",e=>{const a=e.target.closest("[data-answer]");if(a){answerQuestion(Number(a.dataset.answer));return}if(e.target.id==="nextQuestion"){gameState.index++;gameState.answered=false;showQuestion()}if(e.target.id==="playAgain")startQuiz();if(e.target.id==="fromRealSubmit"){$("#gameDialog").close();$("#submitDialog").showModal()}if(e.target.id==="memoryAgain")openMemory()});
 // Los votos de retos reales los gestiona community.js y se guardan en Supabase.
 document.querySelectorAll(".filter").forEach(b=>b.addEventListener("click",()=>{document.querySelectorAll(".filter").forEach(x=>x.classList.remove("active"));b.classList.add("active");renderChallenges(b.dataset.filter)}));
