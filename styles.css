@@ -242,3 +242,49 @@ body{background:radial-gradient(ellipse at 50% -18%,#4d155e 0,transparent 42%),r
  #communityGrid .community-card{min-height:130px}
  #communityGrid .community-thumb{width:70px;min-width:70px;height:92px}
 }
+
+
+/* V15 — campaña de competición y perfiles de creador */
+.hero{min-height:590px;background:radial-gradient(ellipse at 78% 48%,#e82e7b27,transparent 35%),linear-gradient(118deg,#100b1c 0%,#1b0d2b 48%,#0b1124 100%);border-color:#f04b9c75}
+.hero h1{font-size:clamp(47px,6.7vw,88px);line-height:.91;letter-spacing:-.078em;text-transform:uppercase}
+.hero h1 .gradient-text{background:linear-gradient(100deg,#ffcf6e 0%,#ff6cb4 42%,#b17cff 75%,#68e8ff 100%);-webkit-background-clip:text;background-clip:text}
+.hero .eyebrow{border-color:#ffb45d66;background:#ffb45d12;color:#ffe0b3}
+.hero .primary-btn{background:linear-gradient(100deg,#ff8a26,#ff347f 62%,#9c36ff);border-color:#ffc66e;box-shadow:0 0 0 5px #ff7a230f,0 15px 44px #ff347f45}
+.hero-art .trophy{background:linear-gradient(145deg,#4c2444,#1c1733 70%);border-color:#ffd08080;box-shadow:0 0 0 9px #ffbd4d0b,0 0 75px #ff347f4f,inset 0 0 35px #ffbd4d22}
+.floating-card{border-color:#ffc16a65}
+#publicProfileDialog{padding:0!important}
+#publicProfileDetails{padding:0 0 4px}
+.public-profile-cover{height:124px;margin:-1px -1px 0;border-radius:17px 17px 0 0;background:radial-gradient(circle at 80% 25%,#ff4b9d5c,transparent 35%),linear-gradient(120deg,#27123c,#17172d 55%,#10243a);position:relative;overflow:hidden}
+.public-profile-cover:after{content:"RETOARENA / COMPETIDOR";position:absolute;right:14px;bottom:12px;font-size:10px;letter-spacing:2px;color:#ffffff80;font-weight:800}
+.public-profile-main{padding:0 22px 22px}
+.public-profile-identity{display:flex;gap:15px;align-items:flex-end;margin-top:-43px;position:relative}
+.public-profile-avatar{width:92px;height:92px;border-radius:50%;border:4px solid #151020;object-fit:cover;background:#37204d;box-shadow:0 5px 24px #0008}
+.public-profile-name{font-size:25px!important;line-height:1.1;margin:0 0 6px!important;overflow-wrap:anywhere}
+.public-profile-handle{color:#c6a6ff;font-size:14px;margin:0 0 5px}
+.public-profile-bio{font-size:14px;line-height:1.65;color:#d6cfe4;margin:18px 0}
+.public-profile-stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:18px 0}
+.public-profile-stat{border:1px solid #ffffff13;border-radius:12px;background:#ffffff06;padding:12px 8px;text-align:center}
+.public-profile-stat strong{display:block;font-size:20px;color:#fff}
+.public-profile-stat span{display:block;font-size:10px;color:#aaa3c1;text-transform:uppercase;letter-spacing:.7px;margin-top:3px}
+.public-profile-posts-title{display:flex;align-items:center;justify-content:space-between;margin:22px 0 12px;font-size:17px}
+.public-profile-posts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.public-post-card{min-width:0;border:1px solid #ffffff16;border-radius:13px;overflow:hidden;background:#171423}
+.public-post-art{height:112px;display:grid;place-items:center;background:radial-gradient(circle at 50% 75%,#ff347f30,transparent 65%),linear-gradient(140deg,#29133a,#111526);font-size:34px}
+.public-post-copy{padding:11px}
+.public-post-copy strong{display:block;font-size:13px;line-height:1.35;overflow-wrap:anywhere}
+.public-post-copy p{font-size:11px;line-height:1.5;color:#a9a2bd;margin:6px 0 9px}
+.public-post-copy a{font-size:12px;color:#d4a5ff;font-weight:800;text-decoration:none}
+.profile-dialog{padding:0!important}
+.profile-editor-cover{height:92px;margin:-1px -1px 0;background:radial-gradient(circle at 80% 25%,#ff4b9d50,transparent 35%),linear-gradient(120deg,#28123c,#17172d 60%,#10243a);border-radius:17px 17px 0 0;position:relative}
+.profile-editor-cover:after{content:"TU IDENTIDAD · TU HISTORIA";position:absolute;left:20px;bottom:13px;font-size:10px;letter-spacing:1.6px;font-weight:800;color:#f4d8ff}
+.profile-editor-inner{padding:0 20px 22px}
+.profile-editor-heading{display:flex;align-items:flex-end;gap:13px;margin-top:-32px;position:relative;margin-bottom:20px}
+.profile-editor-badge{width:68px;height:68px;border-radius:50%;border:3px solid #151020;background:linear-gradient(135deg,#ff4d9b,#8b45ff);display:grid;place-items:center;font-size:23px;font-weight:900;overflow:hidden;flex-shrink:0}
+.profile-editor-heading h2{margin:0 0 4px!important;font-size:23px!important}
+.profile-editor-heading p{margin:0;color:#bcb1d2;font-size:12px}
+.profile-dialog #profileForm{gap:15px!important}
+.profile-dialog #profileForm label{font-size:13px!important;font-weight:700}
+.profile-dialog #profileForm input,.profile-dialog #profileForm textarea{font-size:15px!important;border-radius:12px!important;padding:13px!important;background:#0b0b17!important;border-color:#403450!important}
+.profile-dialog #profileForm button[type=submit]{background:linear-gradient(100deg,#ff8a26,#ff347f 62%,#9c36ff)!important;min-height:52px;border:1px solid #ffc66e!important;border-radius:12px!important}
+.profile-dialog #profilePreview{border-color:#ff4f9b40!important;background:linear-gradient(135deg,#20122d,#10121f)!important}
+@media(max-width:700px){.hero{min-height:0}.hero h1{font-size:clamp(42px,11.2vw,58px);line-height:.94}.hero .eyebrow{font-size:8px}.public-profile-cover{height:105px}.public-profile-main{padding:0 15px 18px}.public-profile-avatar{width:76px;height:76px}.public-profile-name{font-size:21px!important}.public-profile-stats{gap:6px}.public-profile-stat{padding:10px 4px}.public-profile-stat strong{font-size:18px}.public-profile-stat span{font-size:9px}.public-post-art{height:90px}.profile-editor-inner{padding:0 15px 18px}}
