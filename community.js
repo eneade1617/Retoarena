@@ -84,32 +84,60 @@
       console.warn("RetoArena: error cargando feed:", error.message);
       return;
     }
-    const rows = posts || [];
-    const ids = [...new Set(rows.map(p => p.user_id).filter(Boolean))];
+
+    // Combina publicaciones sociales con retos aprobados que ya tienen vídeo.
+    // Si la consulta de retos falla, las publicaciones sociales siguen funcionando.
+    const challengeResult = await db.from("challenges")
+      .select("id, creator_id, title, description, category, video_url, created_at")
+      .eq("status", "approved").not("video_url", "is", null)
+      .order("created_at", { ascending: false }).limit(40);
+    const socialRows = posts || [];
+    const challengeRows = challengeResult.error ? [] : (challengeResult.data || []);
+    if (challengeResult.error) console.warn("RetoArena: no se pudieron añadir retos al feed:", challengeResult.error.message);
+
+    const authorIds = [...new Set([
+      ...socialRows.map(p => p.user_id),
+      ...challengeRows.map(ch => ch.creator_id)
+    ].filter(Boolean))];
     let profileMap = {};
-    if (ids.length) {
-      const result = await db.from("profiles").select("id, username, display_name, avatar_url, points").in("id", ids);
+    if (authorIds.length) {
+      const result = await db.from("profiles").select("id, username, display_name, avatar_url, points").in("id", authorIds);
       if (!result.error) profileMap = Object.fromEntries((result.data || []).map(p => [p.id, p]));
     }
     if (!feed.open) return;
-    if (!rows.length) {
-      target.innerHTML = '<div class="discovery-feed-empty"><span>✦</span><strong>La arena está esperando tu primera publicación.</strong><p>Sube una foto o un vídeo desde tu perfil y aparecerá aquí para que la comunidad lo descubra.</p></div>';
+
+    const items = [
+      ...socialRows.map(post => ({...post, feed_kind:"post", feed_user_id:post.user_id, feed_date:post.created_at})),
+      ...challengeRows.map(ch => ({...ch, feed_kind:"challenge", feed_user_id:ch.creator_id, media_url:ch.video_url, media_type:"video", caption:ch.description || "", feed_date:ch.created_at}))
+    ].sort((a,b) => new Date(b.feed_date || 0) - new Date(a.feed_date || 0));
+
+    if (!items.length) {
+      target.innerHTML = '<div class="discovery-feed-empty"><span>✦</span><strong>La arena está esperando tu primera publicación.</strong><p>Los vídeos de la comunidad y los retos aprobados aparecerán aquí para que puedas descubrirlos deslizando.</p></div>';
       return;
     }
-    target.innerHTML = rows.map(post => {
-      const profile = profileMap[post.user_id] || {};
+    target.innerHTML = items.map(item => {
+      const profile = profileMap[item.feed_user_id] || {};
       const name = profile.display_name || profile.username || "Competidor";
       const avatarUrl = safeUrl(profile.avatar_url || "");
       const avatar = avatarUrl ? '<img src="' + esc(avatarUrl) + '" alt="" loading="lazy">' : '<span>' + esc(name.slice(0,2).toUpperCase()) + '</span>';
-      const mediaUrl = safeUrl(post.media_url || "");
-      const media = post.media_type === "video"
+      const mediaUrl = safeUrl(item.media_url || "");
+      const media = item.media_type === "video"
         ? '<video src="' + esc(mediaUrl) + '" controls muted playsinline loop preload="metadata"></video>'
         : '<img src="' + esc(mediaUrl) + '" loading="lazy" alt="Publicación de ' + esc(name) + '">';
-      return '<article class="discovery-post" data-discovery-post="' + esc(post.id) + '" data-discovery-user="' + esc(post.user_id) + '"><div class="discovery-post-author"><div class="discovery-post-avatar">' + avatar + '</div><div class="discovery-post-author-copy"><strong>' + esc(name) + '</strong><span>@' + esc(profile.username || "competidor") + ' · ' + Number(profile.points || 0).toLocaleString("es-ES") + ' pts</span></div><span class="discovery-post-badge">' + (post.media_type === "video" ? '▶ VÍDEO' : '✦ FOTO') + '</span></div><div class="discovery-post-media">' + media + '</div><div class="discovery-post-caption">' + (post.caption ? '<p>' + esc(post.caption) + '</p>' : '<p class="discovery-no-caption">Un nuevo momento en la arena.</p>') + '<span>' + new Date(post.created_at).toLocaleDateString("es-ES",{day:"2-digit",month:"short",year:"numeric"}) + '</span></div><button type="button" class="discovery-open-profile" data-open-profile="' + esc(post.user_id) + '">VER PERFIL DEL COMPETIDOR ↗</button></article>';
+      const isChallenge = item.feed_kind === "challenge";
+      const title = isChallenge ? '<h3 class="discovery-challenge-title">' + esc(item.title || "Reto de la comunidad") + '</h3>' : "";
+      const category = isChallenge && item.category ? '<span class="discovery-challenge-category">' + esc(item.category) + '</span>' : "";
+      const cardId = isChallenge ? 'data-discovery-challenge="' + esc(item.id) + '"' : 'data-discovery-post="' + esc(item.id) + '"';
+      const badge = isChallenge ? '⚡ RETO APROBADO' : (item.media_type === "video" ? '▶ VÍDEO' : '✦ FOTO');
+      const action = isChallenge
+        ? '<a class="discovery-open-profile discovery-challenge-link" href="' + esc(mediaUrl) + '" target="_blank" rel="noopener noreferrer">ABRIR VÍDEO DEL RETO ↗</a>'
+        : '<button type="button" class="discovery-open-profile" data-open-profile="' + esc(item.feed_user_id) + '">VER PERFIL DEL COMPETIDOR ↗</button>';
+      return '<article class="discovery-post ' + (isChallenge ? 'discovery-challenge-post' : '') + '" ' + cardId + ' data-discovery-user="' + esc(item.feed_user_id || "") + '"><div class="discovery-post-author"><div class="discovery-post-avatar">' + avatar + '</div><div class="discovery-post-author-copy"><strong>' + esc(name) + '</strong><span>@' + esc(profile.username || "competidor") + ' · ' + Number(profile.points || 0).toLocaleString("es-ES") + ' pts</span></div><span class="discovery-post-badge">' + badge + '</span></div>' + category + title + '<div class="discovery-post-media">' + media + '</div><div class="discovery-post-caption">' + (item.caption ? '<p>' + esc(item.caption) + '</p>' : '<p class="discovery-no-caption">Un nuevo momento en la arena.</p>') + '<span>' + new Date(item.feed_date || item.created_at).toLocaleDateString("es-ES",{day:"2-digit",month:"short",year:"numeric"}) + '</span></div>' + action + '</article>';
     }).join("");
-    await decorateSocialFeed(target, rows);
+    // Las reacciones y comentarios existentes se aplican solo a profile_posts.
+    await decorateSocialFeed(target, socialRows);
 
-    // Feed vertical: reproducir solo el vídeo que está a la vista y pausar los demás.
+    // Feed vertical: reproduce solo el vídeo que está a la vista.
     const feedScroller = $("#discoveryFeedDialog .discovery-feed-body");
     const feedVideos = [...target.querySelectorAll("video")];
     feedVideos.forEach(video => {
@@ -135,7 +163,7 @@
     }
 
     if (focusPostId) {
-      const focused = [...target.querySelectorAll("[data-discovery-post]")].find(card => card.dataset.discoveryPost === String(focusPostId));
+      const focused = [...target.querySelectorAll("[data-discovery-post], [data-discovery-challenge]")].find(card => card.dataset.discoveryPost === String(focusPostId) || card.dataset.discoveryChallenge === String(focusPostId));
       if (focused) {
         window.setTimeout(() => focused.scrollIntoView({behavior:"smooth",block:"start"}), 120);
         focused.classList.add("discovery-post-focused");
