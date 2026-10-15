@@ -1,8 +1,11 @@
-const challenges = [
-  {id:"quiz", type:"juego", title:"Duelo relámpago", desc:"5 rondas · 20 segundos por respuesta · hasta 25 puntos.", icon:"⚔️", art:"art-purple", tag:"COMPETITIVO", players:"3 partidas al día", action:"Entrar al duelo", competitive:true},
-  {id:"memory", type:"juego", title:"Memoria relámpago", desc:"Entrena tu memoria y supera tu propio récord.", icon:"🧩", art:"art-blue", tag:"ENTRENAMIENTO", players:"Sin puntos de ranking", action:"Entrenar"},
-  {id:"speed", type:"juego", title:"Reto de velocidad", desc:"Memoriza la secuencia y pon a prueba tus reflejos.", icon:"⚡", art:"art-pink", tag:"ENTRENAMIENTO", players:"Sin puntos de ranking", action:"Entrenar"}
-];
+const challenges = [];
+const categoryNames = {
+  extremo: "EXTREMO · SOLO RETOS SEGUROS",
+  comida: "COMIDA",
+  deporte: "DEPORTE",
+  challenge: "CHALLENGE",
+  "te-reto": "TE RETO"
+};
 const questions = [
   {level:"CALENTAMIENTO",time:20,q:"Un producto cuesta 80 €. Tiene un descuento del 25 %. ¿Cuál es el precio final?",a:["65 €","60 €","55 €","75 €"],correct:1,fact:"El 25 % de 80 es 20; 80 − 20 = 60 €."},
   {level:"ESTRATEGIA",time:18,q:"Una secuencia sigue esta regla: 2, 6, 12, 20, 30… ¿Qué número sigue?",a:["36","42","40","44"],correct:1,fact:"Las diferencias son +4, +6, +8, +10; sigue +12. La respuesta es 42."},
@@ -29,18 +32,19 @@ function toast(message){const el=$("#toast");el.textContent=message;el.classList
 
 
 function renderChallenges(filter = "todos") {
-  // La lista challenges ya contiene los minijuegos originales
-  // y los retos aprobados que carga retos-supabase.js.
-  const todosLosRetos = challenges;
+  // Solo mostramos retos reales aprobados. Los minijuegos quedan fuera de esta etapa.
+  const todosLosRetos = challenges.filter(c => c.type !== "juego");
 
-  const list = todosLosRetos.filter(c =>
-    filter === "todos" || c.type === filter
-  );
-
+  const list = todosLosRetos.filter(c => filter === "todos" || c.type === filter);
+  if (!list.length) {
+    $("#challengeGrid").innerHTML = '<div class="challenge-empty"><span>✦</span><h3>'+(filter==="todos"?"La arena está esperando tu primer reto":"Próximamente en esta categoría")+'</h3><p>Publica un vídeo original, elige esta categoría y ayuda a inaugurarla.</p><button class="primary-btn" type="button" id="emptyPublish">Crear un reto ↗</button></div>';
+    $("#statChallenges").textContent = "5";
+    return;
+  }
   $("#challengeGrid").innerHTML = list.map(c => `
     <article class="challenge-card">
       <div class="challenge-art ${c.art || ""}">
-        <span class="tag ${c.competitive ? "tag-competitive" : c.type === "real" ? "real" : c.tag === "ENTRENAMIENTO" ? "tag-training" : "open"}">${escapeHtml(c.tag || (c.type === "real" ? "RETO REAL" : "RETO"))}</span>
+        <span class="tag real">${escapeHtml(categoryNames[c.type] || c.tag || "RETO DE LA COMUNIDAD")}</span>
         <span class="emoji">${c.icon || "🎯"}</span>
       </div>
       <div class="challenge-body">
@@ -48,7 +52,7 @@ function renderChallenges(filter = "todos") {
         <p>${escapeHtml(c.desc)}</p>
         <div class="card-meta">
           <span>${escapeHtml(c.players || "Disponible")}</span>
-          <span>${c.type === "real" ? "Comunidad" : c.competitive ? "Puntos reales" : "Práctica"}</span>
+          <span>Comunidad</span>
         </div>
         <button class="play-btn" data-challenge="${c.id}">
           ${escapeHtml(c.action || "Ver reto")} <span>›</span>
@@ -299,7 +303,8 @@ $("#gameContent").addEventListener("click",e=>{const a=e.target.closest("[data-a
 document.querySelectorAll(".filter").forEach(b=>b.addEventListener("click",()=>{document.querySelectorAll(".filter").forEach(x=>x.classList.remove("active"));b.classList.add("active");renderChallenges(b.dataset.filter)}));
 $("#exploreBtn").addEventListener("click",()=>$("#challenges").scrollIntoView({behavior:"smooth"}));
 $("#submitNav").addEventListener("click",()=>$("#submitDialog").showModal());
-$("#submitForm").addEventListener("submit",e=>{e.preventDefault();const fd=new FormData(e.target);const url=String(fd.get("url")).trim();if(!/^https?:\/\//i.test(url)){toast("Introduce un enlace válido que empiece por https://");return}const sub={id:"local-"+Date.now(),title:String(fd.get("title")).trim(),creator:String(fd.get("creator")).trim(),url,description:String(fd.get("description")||"").trim(),status:"pending",createdAt:new Date().toISOString()};localSubmissions.unshift(sub);localStorage.setItem("retoarena_submissions",JSON.stringify(localSubmissions));renderCommunity();$("#submitFeedback").classList.remove("hidden");$("#submitFeedback").textContent="Envío guardado en este dispositivo y marcado como pendiente. En esta demo no se publica en un servidor ni lo recibe un moderador.";e.target.reset();toast("Reto guardado localmente")});
+document.addEventListener("click",e=>{if(e.target.closest("#emptyPublish"))$("#submitDialog").showModal()});
+// El envío real de vídeo a Supabase lo gestiona community.js; no guardar retos ficticios localmente.
 
 
 document.addEventListener("retoarena:retos-cargados", (event) => {
@@ -311,16 +316,17 @@ document.addEventListener("retoarena:retos-cargados", (event) => {
     // Evitar duplicados si el reto ya fue cargado.
     const existente = challenges.find((item) => item.id === id);
 
-    const esJuego = reto.category === "juego";
+    const esJuego = false;
+    const category = ["extremo","comida","deporte","challenge","te-reto"].includes(reto.category) ? reto.category : "challenge";
 
     const retoActualizado = {
       id,
-      type: esJuego ? "juego" : "real",
+      type: category,
       title: reto.title || "Reto de la comunidad",
       desc: reto.description || "Descubre este reto de la comunidad.",
-      icon: esJuego ? "🎮" : "🎬",
-      art: esJuego ? "art-blue" : "art-pink",
-      tag: esJuego ? "MINIJUEGO" : "RETO REAL",
+      icon: category === "comida" ? "🍔" : category === "deporte" ? "🏆" : category === "extremo" ? "🔥" : category === "te-reto" ? "⚔️" : "🎯",
+      art: category === "comida" ? "art-orange" : category === "deporte" ? "art-blue" : category === "extremo" ? "art-red" : category === "te-reto" ? "art-pink" : "art-purple",
+      tag: categoryNames[category],
       players: "Reto aprobado",
       action: esJuego ? "Jugar ahora" : "Ver reto",
       videoUrl: reto.video_url || ""
@@ -335,10 +341,7 @@ document.addEventListener("retoarena:retos-cargados", (event) => {
 
   // Actualizar ambas secciones de la aplicación.
   const filtroActivo = document.querySelector(".filter.active");
-
-  renderChallenges(
-    filtroActivo ? filtroActivo.dataset.filter : "todos"
-  );
+  renderChallenges(filtroActivo ? filtroActivo.dataset.filter : "todos");
 
   renderCommunity();
 });
