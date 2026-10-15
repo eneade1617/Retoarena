@@ -101,7 +101,148 @@
         : '<img src="' + esc(mediaUrl) + '" loading="lazy" alt="Publicación de ' + esc(name) + '">';
       return '<article class="discovery-post" data-discovery-user="' + esc(post.user_id) + '"><div class="discovery-post-author"><div class="discovery-post-avatar">' + avatar + '</div><div class="discovery-post-author-copy"><strong>' + esc(name) + '</strong><span>@' + esc(profile.username || "competidor") + ' · ' + Number(profile.points || 0).toLocaleString("es-ES") + ' pts</span></div><span class="discovery-post-badge">' + (post.media_type === "video" ? '▶ VÍDEO' : '✦ FOTO') + '</span></div><div class="discovery-post-media">' + media + '</div><div class="discovery-post-caption">' + (post.caption ? '<p>' + esc(post.caption) + '</p>' : '<p class="discovery-no-caption">Un nuevo momento en la arena.</p>') + '<span>' + new Date(post.created_at).toLocaleDateString("es-ES",{day:"2-digit",month:"short",year:"numeric"}) + '</span></div><button type="button" class="discovery-open-profile" data-open-profile="' + esc(post.user_id) + '">VER PERFIL DEL COMPETIDOR ↗</button></article>';
     }).join("");
+    await decorateSocialFeed(target, rows);
   }
+
+  async function decorateSocialFeed(target, posts) {
+    const { data: sessionData } = await db.auth.getSession();
+    const userId = sessionData.session?.user?.id || null;
+    const ids = posts.map(p => p.id);
+    if (!ids.length) return;
+    const [rr, cc, ff] = await Promise.all([
+      db.from("post_reactions").select("post_id,user_id,reaction_type").in("post_id", ids),
+      db.from("post_comments").select("id,post_id,user_id,body,created_at").in("post_id", ids).order("created_at", {ascending:true}).limit(160),
+      userId ? db.from("profile_follows").select("followed_id").eq("follower_id", userId) : Promise.resolve({data:[],error:null})
+    ]);
+    const reactions = rr.error ? [] : (rr.data || []);
+    const comments = cc.error ? [] : (cc.data || []);
+    const follows = new Set((ff.data || []).map(f => f.followed_id));
+    for (const post of posts) {
+      const card = target.querySelector('[data-discovery-user="' + post.user_id + '"]');
+      if (!card) continue;
+      const postReactions = reactions.filter(r => r.post_id === post.id);
+      const mine = postReactions.find(r => r.user_id === userId);
+      const reactionCounts = postReactions.reduce((m,r) => ((m[r.reaction_type] = (m[r.reaction_type] || 0) + 1),m),{});
+      const controls = document.createElement("div");
+      controls.className = "discovery-social-controls";
+      const reactionsBox = document.createElement("div");
+      reactionsBox.className = "discovery-post-actions";
+      for (const item of [{id:"like",label:"♥ Me gusta"},{id:"epic",label:"🔥 Épico"},{id:"skill",label:"⚡ Qué nivel"},{id:"funny",label:"😂 Me hizo reír"},{id:"legend",label:"🏆 Leyenda"}]) {
+        const button = document.createElement("button");
+        button.type = "button";
+        button.className = "discovery-reaction-button" + (mine?.reaction_type === item.id ? " is-selected" : "");
+        button.dataset.socialReaction = item.id;
+        button.dataset.socialPost = post.id;
+        button.textContent = item.label + " " + (reactionCounts[item.id] || 0);
+        reactionsBox.appendChild(button);
+      }
+      controls.appendChild(reactionsBox);
+      const commentList = document.createElement("div");
+      commentList.className = "discovery-comments-preview";
+      for (const cm of comments.filter(c => c.post_id === post.id).slice(-3)) {
+        const profile = window.retoArenaProfilesById?.[cm.user_id] || {};
+        const line = document.createElement("div"); line.className = "discovery-comment";
+        const who = document.createElement("strong"); who.textContent = profile.display_name || profile.username || "Competidor";
+        const body = document.createElement("span"); body.textContent = cm.body;
+        line.append(who, body); commentList.appendChild(line);
+      }
+      controls.appendChild(commentList);
+      if (userId) {
+        const form = document.createElement("form"); form.className = "discovery-comment-form"; form.dataset.socialComment = post.id;
+        const input = document.createElement("input"); input.name = "comment"; input.maxLength = 500; input.required = true; input.placeholder = "Escribe un comentario…";
+        const send = document.createElement("button"); send.type = "submit"; send.setAttribute("aria-label","Enviar comentario"); send.textContent = "➤";
+        form.append(input,send); controls.appendChild(form);
+      } else {
+        const hint = document.createElement("p"); hint.className = "discovery-login-hint"; hint.textContent = "Entra en tu cuenta para reaccionar y comentar."; controls.appendChild(hint);
+      }
+      if (userId && userId !== post.user_id) {
+        const follow = document.createElement("button"); follow.type = "button";
+        follow.className = "discovery-follow-button" + (follows.has(post.user_id) ? " is-following" : "");
+        follow.dataset.socialFollow = post.user_id; follow.textContent = follows.has(post.user_id) ? "SIGUIENDO" : "＋ SEGUIR";
+        controls.appendChild(follow);
+      }
+      card.appendChild(controls);
+    }
+    await refreshNotificationBadge();
+  }
+
+  async function toggleSocialReaction(postId, reactionType) {
+    const {data} = await db.auth.getSession(), userId = data.session?.user?.id;
+    if (!userId) { notify("Entra en tu cuenta para reaccionar."); return; }
+    const {data:existing,error} = await db.from("post_reactions").select("id,reaction_type").eq("post_id",postId).eq("user_id",userId).maybeSingle();
+    if (error) { notify("No se pudo consultar tu reacción."); return; }
+    let result;
+    if (existing?.reaction_type === reactionType) result = await db.from("post_reactions").delete().eq("id",existing.id);
+    else if (existing) result = await db.from("post_reactions").update({reaction_type:reactionType}).eq("id",existing.id);
+    else result = await db.from("post_reactions").insert({post_id:postId,user_id:userId,reaction_type:reactionType});
+    if (result.error) { notify("No se pudo guardar la reacción."); return; }
+    await openDiscoveryFeed();
+  }
+
+  async function toggleSocialFollow(followedId) {
+    const {data} = await db.auth.getSession(), userId = data.session?.user?.id;
+    if (!userId) { notify("Entra en tu cuenta para seguir competidores."); return; }
+    if (userId === followedId) return;
+    const {data:existing,error} = await db.from("profile_follows").select("follower_id").eq("follower_id",userId).eq("followed_id",followedId).maybeSingle();
+    if (error) { notify("No se pudo consultar el seguimiento."); return; }
+    const result = existing
+      ? await db.from("profile_follows").delete().eq("follower_id",userId).eq("followed_id",followedId)
+      : await db.from("profile_follows").insert({follower_id:userId,followed_id:followedId});
+    if (result.error) { notify("No se pudo actualizar el seguimiento."); return; }
+    await openDiscoveryFeed();
+  }
+
+  async function refreshNotificationBadge() {
+    const badge = $("#notificationUnreadCount");
+    if (!badge) return;
+    const {data} = await db.auth.getSession(), userId = data.session?.user?.id;
+    if (!userId) { badge.textContent = ""; return; }
+    const {count,error} = await db.from("notifications").select("id",{count:"exact",head:true}).eq("recipient_id",userId).is("read_at",null);
+    if (!error) badge.textContent = count ? String(count) : "";
+  }
+
+  async function openSocialNotifications() {
+    const {data} = await db.auth.getSession(), userId = data.session?.user?.id;
+    if (!userId) { notify("Entra en tu cuenta para ver las notificaciones."); return; }
+    let dialog = $("#socialNotificationsDialog");
+    if (!dialog) {
+      dialog = document.createElement("dialog"); dialog.id = "socialNotificationsDialog"; dialog.className = "discovery-feed-dialog";
+      dialog.innerHTML = '<header class="discovery-feed-top"><button type="button" id="socialNotificationsClose" aria-label="Cerrar">‹</button><div><strong>NOTIFICACIONES</strong><small>LO QUE PASA EN LA ARENA</small></div></header><div class="discovery-feed-body"><div class="discovery-feed-intro"><span>TU COMUNIDAD</span><h2>La arena te menciona.</h2><p>Reacciones, comentarios y nuevos seguidores.</p></div><div id="socialNotificationsList" class="notification-items"></div></div>';
+      document.body.appendChild(dialog);
+    }
+    dialog.showModal();
+    const list = $("#socialNotificationsList");
+    list.innerHTML = '<p class="discovery-feed-state">Cargando notificaciones…</p>';
+    const {data:rows,error} = await db.from("notifications").select("id,actor_id,kind,message,created_at,read_at").eq("recipient_id",userId).order("created_at",{ascending:false}).limit(60);
+    if (error) { list.textContent = "No se pudieron cargar las notificaciones."; return; }
+    const unread = (rows||[]).filter(n=>!n.read_at).map(n=>n.id);
+    if (unread.length) await db.from("notifications").update({read_at:new Date().toISOString()}).in("id",unread);
+    await refreshNotificationBadge();
+    if (!(rows||[]).length) { list.innerHTML = '<div class="discovery-feed-empty"><span>✦</span><strong>Todo tranquilo por ahora.</strong><p>Cuando alguien interactúe contigo, lo verás aquí.</p></div>'; return; }
+    const actorIds = [...new Set(rows.map(n=>n.actor_id).filter(Boolean))]; let actors={};
+    if (actorIds.length) { const pr=await db.from("profiles").select("id,username,display_name").in("id",actorIds); if(!pr.error) actors=Object.fromEntries((pr.data||[]).map(p=>[p.id,p])); }
+    list.innerHTML = rows.map(n=>{const a=actors[n.actor_id]||{};return '<article class="notification-row '+(n.read_at?'':'notification-unread')+'"><span class="notification-symbol">'+({follow:'＋',reaction:'♥',comment:'☷'}[n.kind]||'✦')+'</span><div><strong>'+esc(a.display_name||a.username||'Un competidor')+'</strong><p>'+esc(n.message)+'</p><small>'+new Date(n.created_at).toLocaleString('es-ES',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'})+'</small></div></article>';}).join("");
+  }
+
+  document.addEventListener("submit", async event => {
+    const form = event.target.closest("[data-social-comment]"); if (!form) return;
+    event.preventDefault();
+    const {data} = await db.auth.getSession(), userId = data.session?.user?.id;
+    if (!userId) { notify("Entra en tu cuenta para comentar."); return; }
+    const input=form.elements.comment, body=input.value.trim(); if(!body)return;
+    const submit=form.querySelector("button"); submit.disabled=true;
+    const {error}=await db.from("post_comments").insert({post_id:form.dataset.socialComment,user_id:userId,body});
+    submit.disabled=false;
+    if(error){notify("No se pudo publicar el comentario.");return;}
+    notify("Comentario publicado."); await openDiscoveryFeed();
+  });
+
+  document.addEventListener("click", event => {
+    const reaction=event.target.closest("[data-social-reaction]"); if(reaction){toggleSocialReaction(reaction.dataset.socialPost,reaction.dataset.socialReaction);return;}
+    const follow=event.target.closest("[data-social-follow]"); if(follow){toggleSocialFollow(follow.dataset.socialFollow);return;}
+    if(event.target.closest("#openNotifications")){openSocialNotifications();return;}
+    if(event.target.closest("#socialNotificationsClose")){$("#socialNotificationsDialog")?.close();return;}
+  });
 
   document.addEventListener("click", event => {
     if (event.target.closest("#discoverNav")) {
