@@ -40,7 +40,7 @@ function renderChallenges(filter = "todos") {
   $("#challengeGrid").innerHTML = list.map(c => `
     <article class="challenge-card">
       <div class="challenge-art ${c.art || ""}">
-        <span class="tag">${c.type === "real" ? "real" : "open"}</span>
+        <span class="tag ${c.competitive ? "tag-competitive" : c.type === "real" ? "real" : c.tag === "ENTRENAMIENTO" ? "tag-training" : "open"}">${escapeHtml(c.tag || (c.type === "real" ? "RETO REAL" : "RETO"))}</span>
         <span class="emoji">${c.icon || "🎯"}</span>
       </div>
       <div class="challenge-body">
