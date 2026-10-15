@@ -54,6 +54,72 @@
     document.body.appendChild(profileDialog);
   }
 
+
+  // Dedicated discovery feed: recent public photos and videos from RetoArena profiles.
+  if (!$("#discoveryFeedDialog")) {
+    const feed = document.createElement("dialog");
+    feed.id = "discoveryFeedDialog";
+    feed.className = "discovery-feed-dialog";
+    feed.innerHTML = '<header class="discovery-feed-top"><button type="button" id="discoveryFeedClose" aria-label="Cerrar">‹</button><div><strong>DESCUBRIR</strong><small>VÍDEOS · FOTOS · RETOS</small></div><span class="discovery-feed-live"><i></i> COMUNIDAD</span></header><div class="discovery-feed-body"><div class="discovery-feed-intro"><span>LA ARENA SE MUEVE</span><h2>Descubre a los próximos protagonistas.</h2><p>Momentos, vídeos y retos compartidos por la comunidad.</p></div><div id="discoveryFeedItems" class="discovery-feed-items"><p class="discovery-feed-state">Cargando publicaciones…</p></div></div>';
+    document.body.appendChild(feed);
+  }
+
+  async function openDiscoveryFeed() {
+    const feed = $("#discoveryFeedDialog"), target = $("#discoveryFeedItems");
+    if (!feed || !target) return;
+    if (!feed.open) feed.showModal();
+    target.innerHTML = '<p class="discovery-feed-state">Buscando las últimas publicaciones…</p>';
+    const { data: posts, error } = await db.from("profile_posts")
+      .select("id, user_id, media_url, media_type, caption, created_at")
+      .eq("status", "published").order("created_at", { ascending: false }).limit(40);
+    if (!feed.open) return;
+    if (error) {
+      target.innerHTML = '<div class="discovery-feed-state">No se pudo cargar el feed ahora. Inténtalo de nuevo en unos segundos.</div>';
+      console.warn("RetoArena: error cargando feed:", error.message);
+      return;
+    }
+    const rows = posts || [];
+    const ids = [...new Set(rows.map(p => p.user_id).filter(Boolean))];
+    let profileMap = {};
+    if (ids.length) {
+      const result = await db.from("profiles").select("id, username, display_name, avatar_url, points").in("id", ids);
+      if (!result.error) profileMap = Object.fromEntries((result.data || []).map(p => [p.id, p]));
+    }
+    if (!feed.open) return;
+    if (!rows.length) {
+      target.innerHTML = '<div class="discovery-feed-empty"><span>✦</span><strong>La arena está esperando tu primera publicación.</strong><p>Sube una foto o un vídeo desde tu perfil y aparecerá aquí para que la comunidad lo descubra.</p></div>';
+      return;
+    }
+    target.innerHTML = rows.map(post => {
+      const profile = profileMap[post.user_id] || {};
+      const name = profile.display_name || profile.username || "Competidor";
+      const avatarUrl = safeUrl(profile.avatar_url || "");
+      const avatar = avatarUrl ? '<img src="' + esc(avatarUrl) + '" alt="" loading="lazy">' : '<span>' + esc(name.slice(0,2).toUpperCase()) + '</span>';
+      const mediaUrl = safeUrl(post.media_url || "");
+      const media = post.media_type === "video"
+        ? '<video src="' + esc(mediaUrl) + '" controls playsinline preload="metadata"></video>'
+        : '<img src="' + esc(mediaUrl) + '" loading="lazy" alt="Publicación de ' + esc(name) + '">';
+      return '<article class="discovery-post" data-discovery-user="' + esc(post.user_id) + '"><div class="discovery-post-author"><div class="discovery-post-avatar">' + avatar + '</div><div class="discovery-post-author-copy"><strong>' + esc(name) + '</strong><span>@' + esc(profile.username || "competidor") + ' · ' + Number(profile.points || 0).toLocaleString("es-ES") + ' pts</span></div><span class="discovery-post-badge">' + (post.media_type === "video" ? '▶ VÍDEO' : '✦ FOTO') + '</span></div><div class="discovery-post-media">' + media + '</div><div class="discovery-post-caption">' + (post.caption ? '<p>' + esc(post.caption) + '</p>' : '<p class="discovery-no-caption">Un nuevo momento en la arena.</p>') + '<span>' + new Date(post.created_at).toLocaleDateString("es-ES",{day:"2-digit",month:"short",year:"numeric"}) + '</span></div><button type="button" class="discovery-open-profile" data-open-profile="' + esc(post.user_id) + '">VER PERFIL DEL COMPETIDOR ↗</button></article>';
+    }).join("");
+  }
+
+  document.addEventListener("click", event => {
+    if (event.target.closest("#discoverNav")) {
+      openDiscoveryFeed();
+      return;
+    }
+    if (event.target.closest("#discoveryFeedClose")) {
+      $("#discoveryFeedDialog")?.close();
+      return;
+    }
+    const profileButton = event.target.closest("[data-open-profile]");
+    if (profileButton) {
+      const id = profileButton.getAttribute("data-open-profile");
+      $("#discoveryFeedDialog")?.close();
+      if (id) showPublicProfile(id);
+    }
+  });
+
   async function showPublicProfile(profileId) {
     const profile = window.retoArenaProfilesById?.[profileId];
     const profileDialog = $("#publicProfileDialog");
