@@ -151,8 +151,11 @@
     feedVideos.forEach(video => {
       video.muted = true;
       video.playsInline = true;
+      video.setAttribute("playsinline", "");
+      video.setAttribute("webkit-playsinline", "");
+      video.preload = "auto";
       video.pause();
-      video.currentTime = 0;
+      video.load();
     });
     if (feedScroller && "IntersectionObserver" in window) {
       if (window.retoArenaVideoObserver) window.retoArenaVideoObserver.disconnect();
@@ -170,39 +173,42 @@
       feedVideos.forEach(video => window.retoArenaVideoObserver.observe(video));
     }
 
-    // Deslizamiento explícito sobre el vídeo para pasar al siguiente/anterior elemento.
-    // El scroll normal sigue disponible cuando el gesto empieza fuera del vídeo.
-    if (!feedScroller.dataset.swipeReady) {
+    // Navegación vertical tipo Reels: el gesto puede empezar en cualquier parte de la tarjeta.
+    // En iOS, el elemento <video> puede capturar los toques nativos, por eso no exigimos iniciar sobre él.
+    if (feedScroller && !feedScroller.dataset.swipeReady) {
       feedScroller.dataset.swipeReady = "1";
-      let touchStartX = 0, touchStartY = 0, touchStartCard = null, touchStartedOnVideo = false;
+      let startX = 0, startY = 0, startCard = null, startTime = 0;
       feedScroller.addEventListener("touchstart", event => {
         const touch = event.changedTouches[0];
-        touchStartX = touch.clientX;
-        touchStartY = touch.clientY;
-        const video = event.target.closest("video");
-        touchStartedOnVideo = Boolean(video);
-        touchStartCard = event.target.closest(".discovery-post");
+        startX = touch.clientX;
+        startY = touch.clientY;
+        startCard = event.target.closest(".discovery-post");
+        startTime = Date.now();
       }, {passive:true});
       feedScroller.addEventListener("touchend", event => {
-        if (!touchStartedOnVideo || !touchStartCard) return;
+        if (!startCard) return;
         const touch = event.changedTouches[0];
-        const deltaY = touch.clientY - touchStartY;
-        const deltaX = touch.clientX - touchStartX;
-        if (Math.abs(deltaY) < 55 || Math.abs(deltaY) < Math.abs(deltaX) * 1.15) return;
+        const dy = touch.clientY - startY;
+        const dx = touch.clientX - startX;
+        const elapsed = Date.now() - startTime;
+        if (Math.abs(dy) < 65 || Math.abs(dy) < Math.abs(dx) * 1.2 || elapsed > 900) {
+          startCard = null;
+          return;
+        }
         const cards = [...target.querySelectorAll(".discovery-post")];
-        const index = cards.indexOf(touchStartCard);
-        const next = deltaY < 0 ? cards[index + 1] : cards[index - 1];
+        const index = cards.indexOf(startCard);
+        const next = dy < 0 ? cards[index + 1] : cards[index - 1];
         if (next) {
           next.scrollIntoView({behavior:"smooth",block:"start"});
           const nextVideo = next.querySelector("video");
           if (nextVideo) {
             feedVideos.forEach(video => { if (video !== nextVideo) video.pause(); });
             nextVideo.muted = true;
-            nextVideo.play().catch(() => {});
+            const playPromise = nextVideo.play();
+            if (playPromise && typeof playPromise.catch === "function") playPromise.catch(() => {});
           }
         }
-        touchStartCard = null;
-        touchStartedOnVideo = false;
+        startCard = null;
       }, {passive:true});
     }
 
