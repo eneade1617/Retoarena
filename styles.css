@@ -419,3 +419,31 @@ body{background:radial-gradient(ellipse at 50% -18%,#4d155e 0,transparent 42%),r
 .discovery-feed-empty strong{display:block;color:white;font-size:17px;line-height:1.4;margin:10px 0}
 .discovery-feed-empty p{font-size:12px}
 @media(max-width:700px){.discovery-feed-dialog{width:100%;height:100dvh;max-width:none;max-height:100dvh;border:0;border-radius:0}.discovery-feed-body{padding:14px 12px calc(28px + env(safe-area-inset-bottom,0px))}.discovery-feed-intro{padding:15px 4px 19px}.discovery-feed-items{gap:16px}.discovery-post{border-radius:17px}.mobile-nav{grid-template-columns:repeat(5,minmax(0,1fr))}.mobile-nav .nav-item{font-size:10px}}
+
+
+/* RetoArena v20 — social interactions */
+.discovery-notification-button{position:relative;min-width:40px;height:38px;border:1px solid #ff75c655;border-radius:12px;background:#24142e;color:#ffb6df;font-size:20px}
+#notificationUnreadCount:not(:empty){position:absolute;top:-6px;right:-6px;min-width:16px;height:16px;padding:0 4px;display:grid;place-items:center;border-radius:99px;background:#ff328c;color:white;font-size:9px;font-weight:900}
+.discovery-social-controls{border-top:1px solid #ffffff10}
+.discovery-post-actions{display:flex;gap:7px;overflow-x:auto;padding:10px 12px 4px;scrollbar-width:none}
+.discovery-post-actions::-webkit-scrollbar{display:none}
+.discovery-reaction-button{flex:0 0 auto;padding:8px 10px;border:1px solid #ffffff19;border-radius:99px;background:#171320;color:#cfc4dd;font-size:11px;white-space:nowrap}
+.discovery-reaction-button.is-selected{border-color:#ff5eb8;background:#39152f;color:#fff}
+.discovery-comments-preview{display:grid;gap:8px;padding:10px 14px 3px}
+.discovery-comment{display:flex;gap:8px;align-items:baseline;font-size:12px;line-height:1.5;overflow-wrap:anywhere}
+.discovery-comment strong{color:#ffb5df;flex:0 0 auto;max-width:35%;overflow:hidden;text-overflow:ellipsis}
+.discovery-comment span{color:#d4ccdf}
+.discovery-comment-form{display:flex;gap:8px;padding:11px 13px 13px}
+.discovery-comment-form input{flex:1;min-width:0;border:1px solid #ffffff20;border-radius:12px;background:#0b0912;color:#fff;padding:11px 12px;font:inherit;font-size:12px}
+.discovery-comment-form button{width:42px;border:0;border-radius:12px;background:linear-gradient(135deg,#f238a5,#803dff);color:white;font-size:17px;font-weight:900}
+.discovery-login-hint{padding:8px 14px 13px;color:#9d91ad;font-size:11px}
+.discovery-follow-button{margin:4px 13px 14px;padding:9px 12px;border:1px solid #ff63b977;border-radius:11px;background:linear-gradient(120deg,#39122f,#24143a);color:#ffb1dc;font-size:10px;font-weight:900;letter-spacing:.6px}
+.discovery-follow-button.is-following{border-color:#ffffff25;background:#181420;color:#bdb2cc}
+.notification-items{display:grid;gap:10px}
+.notification-row{display:flex;gap:12px;padding:14px;border:1px solid #ffffff14;border-radius:15px;background:#15101e}
+.notification-row.notification-unread{border-color:#ff69bb70;background:linear-gradient(120deg,#28132a,#15101e)}
+.notification-symbol{display:grid;place-items:center;flex:0 0 38px;height:38px;border-radius:13px;background:#321535;color:#ff9bd4;font-size:20px}
+.notification-row strong{font-size:13px}
+.notification-row p{margin:4px 0 6px;color:#d0c5dc;font-size:12px;line-height:1.5}
+.notification-row small{color:#988ba9;font-size:10px}
+@media(max-width:700px){.discovery-feed-top{gap:8px}.discovery-feed-live{font-size:8px}.discovery-reaction-button{font-size:10px;padding:8px}.discovery-comment-form input{font-size:16px}}
