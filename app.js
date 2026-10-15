@@ -4,11 +4,11 @@ const challenges = [
   {id:"speed", type:"juego", title:"Reto de velocidad", desc:"Memoriza la secuencia y pon a prueba tus reflejos.", icon:"⚡", art:"art-pink", tag:"ENTRENAMIENTO", players:"Sin puntos de ranking", action:"Entrenar"}
 ];
 const questions = [
-  {q:"¿Cuál es el planeta más grande del sistema solar?", a:["Marte","Júpiter","Venus","Mercurio"], correct:1, fact:"Júpiter es el planeta más grande del sistema solar."},
-  {q:"¿Cuántos lados tiene un hexágono?", a:["5","6","7","8"], correct:1, fact:"Un hexágono tiene seis lados."},
-  {q:"¿Qué océano es el más grande?", a:["Atlántico","Índico","Pacífico","Ártico"], correct:2, fact:"El océano Pacífico es el de mayor superficie."},
-  {q:"¿Cuánto es 9 × 7?", a:["56","63","72","67"], correct:1, fact:"9 por 7 es 63."},
-  {q:"¿Qué gas absorben las plantas principalmente durante la fotosíntesis?", a:["Oxígeno","Helio","Dióxido de carbono","Hidrógeno"], correct:2, fact:"Las plantas absorben dióxido de carbono durante la fotosíntesis."}
+  {level:"CALENTAMIENTO",time:20,q:"Un producto cuesta 80 €. Tiene un descuento del 25 %. ¿Cuál es el precio final?",a:["65 €","60 €","55 €","75 €"],correct:1,fact:"El 25 % de 80 es 20; 80 − 20 = 60 €."},
+  {level:"ESTRATEGIA",time:18,q:"Una secuencia sigue esta regla: 2, 6, 12, 20, 30… ¿Qué número sigue?",a:["36","40","42","44"],correct:1,fact:"Las diferencias son +4, +6, +8, +10; sigue +12. La respuesta es 42."},
+  {level:"RAZONAMIENTO",time:15,q:"Todos los zorbs son azules. Algunos objetos azules son metálicos. ¿Qué conclusión es segura?",a:["Todos los zorbs son metálicos","Ningún zorb es metálico","Todos los objetos metálicos son zorbs","Todos los zorbs son azules"],correct:2,fact:"La única conclusión garantizada es que todos los zorbs son azules; las otras relaciones no se deducen."},
+  {level:"ÉLITE",time:12,q:"Un tren recorre 120 km en 1 h 30 min a velocidad constante. ¿Cuánto tardará en recorrer 200 km?",a:["2 h","2 h 15 min","2 h 30 min","3 h"],correct:1,fact:"120 km en 1,5 h equivale a 80 km/h; 200 ÷ 80 = 2,5 horas, es decir, 2 h 30 min."},
+  {level:"FINAL BOSS",time:10,q:"Tienes 3 interruptores fuera de una habitación y una bombilla dentro. Solo puedes entrar una vez. ¿Cómo identificas el interruptor correcto?",a:["Enciendo uno y entro inmediatamente","Enciendo el primero un rato, lo apago, enciendo el segundo y entro: luz encendida = segundo; apagada y caliente = primero; apagada y fría = tercero","Enciendo los tres y entro","No se puede resolver"],correct:1,fact:"El calor de la bombilla permite distinguir el primer interruptor del tercero, mientras que la luz encendida identifica el segundo."}
 ];
 // Los retos de la comunidad se cargan desde Supabase; no mostramos votos ficticios.
 const community = [];
@@ -147,17 +147,17 @@ function showQuestion(){
   stopQuizTimer();
   if(gameState.index>=questions.length){finishQuiz();return}
   const q=questions[gameState.index];
-  $("#gameContent").innerHTML=`<div class="duel-top"><span class="game-kicker">⚔ DUELO RELÁMPAGO · RONDA ${gameState.index+1}/5</span><span class="duel-score">${gameState.score} / 5</span></div><h2>Responde bajo presión</h2><div class="duel-timer"><div id="duelTimerBar"></div></div><div class="duel-timer-label"><span>TIEMPO RESTANTE</span><strong id="duelTimerText">20 s</strong></div><div class="game-question">${q.q}</div><div class="answer-list">${q.a.map((a,i)=>`<button class="answer-btn" data-answer="${i}"><span class="answer-letter">${String.fromCharCode(65+i)}</span>${a}</button>`).join("")}</div><div id="answerFeedback"></div><p class="form-hint">Una respuesta por ronda. Si se agota el tiempo, no suma acierto. Máximo 3 duelos competitivos al día.</p>`;
-  let remaining=20;
+  $("#gameContent").innerHTML=`<div class="duel-top"><span class="game-kicker">⚔ DUELO RELÁMPAGO · RONDA ${gameState.index+1}/5</span><span class="duel-score">${gameState.score} / 5</span></div><div class="duel-level">${q.level}</div><h2>${gameState.index===4?"FINAL BOSS: demuestra lo que sabes":gameState.index>=2?"La arena se complica":"Entra en combate"}</h2><div class="duel-timer"><div id="duelTimerBar"></div></div><div class="duel-timer-label"><span>TIEMPO RESTANTE</span><strong id="duelTimerText">${q.time} s</strong></div><div class="game-question">${q.q}</div><div class="answer-list">${q.a.map((a,i)=>`<button class="answer-btn" data-answer="${i}"><span class="answer-letter">${String.fromCharCode(65+i)}</span>${a}</button>`).join("")}</div><div id="answerFeedback"></div><p class="form-hint">Una respuesta por ronda. Si se agota el tiempo, no suma acierto. Máximo 3 duelos competitivos al día.</p>`;
+  let remaining=q.time;
   const updateTimer=()=>{
     const text=$("#duelTimerText"),bar=$("#duelTimerBar");
     if(text)text.textContent=remaining+" s";
-    if(bar)bar.style.width=(remaining/20*100)+"%";
+    if(bar)bar.style.width=(remaining/q.time*100)+"%";
     if(remaining<=5 && text)text.classList.add("urgent");
   };
   updateTimer();
   quizTimerInterval=setInterval(()=>{remaining--;updateTimer();if(remaining<=0){clearInterval(quizTimerInterval);quizTimerInterval=null}},1000);
-  quizTimeoutHandle=setTimeout(()=>{if(!gameState.answered)answerQuestion(-1)},20000);
+  quizTimeoutHandle=setTimeout(()=>{if(!gameState.answered)answerQuestion(-1)},q.time*1000);
 }
 async function answerQuestion(index){
   if(gameState.answered)return;
