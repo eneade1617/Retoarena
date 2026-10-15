@@ -278,11 +278,91 @@
     creatorInput.value = profile?.display_name || profile?.username || data.session.user.email?.split("@")[0] || "";
   });
 
+  async function loadModerationPanel() {
+    const userResult = await db.auth.getUser();
+    const user = userResult.data?.user;
+    let panel = $("#moderationPanel");
+    if (!panel) {
+      panel = document.createElement("section");
+      panel.id = "moderationPanel";
+      panel.className = "section";
+      panel.style.display = "none";
+      panel.innerHTML = '<div class="section-heading"><div><span class="eyebrow">HERRAMIENTAS INTERNAS</span><h2>Moderación de retos</h2></div><span class="pill" id="pendingCount">0 pendientes</span></div><p style="color:var(--muted);font-size:13px">Revisa cada envío antes de hacerlo público.</p><div id="pendingChallenges" style="display:grid;gap:12px"></div>';
+      const community = $("#publicCommunity");
+      if (community) community.parentNode.insertBefore(panel, community.nextSibling);
+    }
+    if (!user) {
+      panel.style.display = "none";
+      return;
+    }
+
+    const { data: admin, error: adminError } = await db.from("admins")
+      .select("user_id")
+      .eq("user_id", user.id)
+      .maybeSingle();
+    if (adminError || !admin) {
+      panel.style.display = "none";
+      return;
+    }
+
+    panel.style.display = "block";
+    const { data: pending, error } = await db.from("challenges")
+      .select("id, title, description, video_url, created_at, creator_id")
+      .eq("status", "pending")
+      .order("created_at", { ascending: true })
+      .limit(50);
+    const grid = $("#pendingChallenges");
+    if (error) {
+      grid.textContent = "No se pudieron cargar los retos pendientes.";
+      return;
+    }
+    const rows = pending || [];
+    $("#pendingCount").textContent = rows.length + (rows.length === 1 ? " pendiente" : " pendientes");
+    if (!rows.length) {
+      grid.innerHTML = '<p style="color:var(--muted)">No hay retos pendientes de revisión.</p>';
+      return;
+    }
+    grid.innerHTML = rows.map(challenge => {
+      const video = safeUrl(challenge.video_url || "");
+      const creator = window.retoArenaProfilesById?.[challenge.creator_id];
+      return '<article class="community-card" style="display:block"><div style="display:flex;justify-content:space-between;gap:12px;align-items:start"><div><h3>' +
+        esc(challenge.title) + '</h3><p>' + esc(challenge.description || "Sin descripción") + '</p><small style="color:var(--muted)">Por @' +
+        esc(creator?.username || "participante") + '</small></div><span class="pill">Pendiente</span></div>' +
+        (video ? '<p><a href="' + esc(video) + '" target="_blank" rel="noopener noreferrer" style="color:#c1afff;text-decoration:underline">Abrir vídeo para revisar ↗</a></p>' : '') +
+        '<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px"><button class="play-btn" data-moderate="approved" data-id="' + esc(challenge.id) + '">Aprobar</button><button class="play-btn" data-moderate="rejected" data-id="' + esc(challenge.id) + '" style="border-color:#7a3d5b">Rechazar</button></div></article>';
+    }).join("");
+  }
+
+  document.addEventListener("click", async event => {
+    const button = event.target.closest("[data-moderate]");
+    if (!button) return;
+    const status = button.getAttribute("data-moderate");
+    const id = button.getAttribute("data-id");
+    if (!["approved", "rejected"].includes(status) || !id) return;
+    button.disabled = true;
+    const { error } = await db.from("challenges")
+      .update({ status })
+      .eq("id", id)
+      .eq("status", "pending");
+    if (error) {
+      notify("No se pudo actualizar el reto. Comprueba que tu cuenta tiene permisos de moderación.");
+      button.disabled = false;
+      return;
+    }
+    notify(status === "approved" ? "Reto aprobado y publicado." : "Reto rechazado.");
+    await loadModerationPanel();
+    if (typeof window.retoArenaCargarRetosAprobados === "function") {
+      await window.retoArenaCargarRetosAprobados();
+    }
+  });
+
   db.auth.onAuthStateChange(() => {
     loadProfiles();
     loadVotes();
+    loadModerationPanel();
   });
 
   loadProfiles();
   loadVotes();
+  loadModerationPanel();
 })();
