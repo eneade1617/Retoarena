@@ -44,8 +44,8 @@ function renderChallenges(filter = "todos") {
   $("#challengeGrid").innerHTML = list.map(c => `
     <article class="challenge-card">
       <div class="challenge-art ${c.art || ""}">
+        ${c.videoUrl ? '<video class="challenge-card-video" src="'+escapeHtml(c.videoUrl)+'" muted playsinline preload="metadata"></video>' : '<span class="challenge-art-symbol">'+(c.icon || "🎯")+'</span>'}
         <span class="tag real">${escapeHtml(categoryNames[c.type] || c.tag || "RETO DE LA COMUNIDAD")}</span>
-        <span class="emoji">${c.icon || "🎯"}</span>
       </div>
       <div class="challenge-body">
         <h3>${escapeHtml(c.title)}</h3>
