@@ -543,3 +543,12 @@ body{background:radial-gradient(ellipse at 50% -18%,#4d155e 0,transparent 42%),r
   .discovery-post{scroll-snap-align:start;scroll-margin-top:8px}
   .discovery-post-media video{max-height:58dvh;aspect-ratio:9/16;object-fit:contain}
 }
+
+
+/* Unified feed: community posts and approved challenge videos */
+.discovery-challenge-title{font-size:clamp(19px,3vw,25px);line-height:1.2;margin:9px 0 12px;letter-spacing:-.4px}
+.discovery-challenge-category{display:inline-flex;margin:12px 0 2px;padding:6px 10px;border-radius:999px;border:1px solid #fa63c56b;background:#fa63c516;color:#ff9cdb;font-size:11px;font-weight:850;letter-spacing:.8px;text-transform:uppercase}
+.discovery-challenge-post{border-color:#fa63c54a;box-shadow:inset 3px 0 #fa63c5,0 12px 34px #0002}
+.discovery-challenge-link{display:block;text-align:center}
+.discovery-post-media video{width:100%;max-height:66dvh;aspect-ratio:9/16;object-fit:contain;background:#020207}
+@media(max-width:700px){.discovery-post-media video{max-height:58dvh;aspect-ratio:9/16;object-fit:contain}}
