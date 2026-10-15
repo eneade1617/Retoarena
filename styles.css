@@ -447,3 +447,7 @@ body{background:radial-gradient(ellipse at 50% -18%,#4d155e 0,transparent 42%),r
 .notification-row p{margin:4px 0 6px;color:#d0c5dc;font-size:12px;line-height:1.5}
 .notification-row small{color:#988ba9;font-size:10px}
 @media(max-width:700px){.discovery-feed-top{gap:8px}.discovery-feed-live{font-size:8px}.discovery-reaction-button{font-size:10px;padding:8px}.discovery-comment-form input{font-size:16px}}
+
+
+/* v22: perfil social y publicación enfocada */
+.own-profile-gallery-hint{font-size:11px;line-height:1.5;color:#c5a9d8;margin:-5px 0 13px}.own-profile-post>img{cursor:zoom-in}.own-profile-view-post{width:100%;padding:9px 10px!important;border:1px solid #ff63bc55!important;border-radius:10px!important;background:#28142f!important;text-align:center;color:#ffb5df!important;font-size:11px!important}.discovery-post-focused{outline:2px solid #ff5eb8;box-shadow:0 0 35px #ff36ae40;transition:box-shadow .25s ease}
