@@ -571,3 +571,10 @@ body{background:radial-gradient(ellipse at 50% -18%,#4d155e 0,transparent 42%),r
   #discoveryFeedDialog .discovery-feed-body{overscroll-behavior-y:contain;-webkit-overflow-scrolling:touch}
   #discoveryFeedDialog .discovery-post{scroll-margin-top:10px}
 }
+
+
+/* Feed playback and swipe reliability on iOS */
+#discoveryFeedDialog .discovery-feed-body{overflow-y:auto;overscroll-behavior-y:contain;-webkit-overflow-scrolling:touch;touch-action:pan-y}
+#discoveryFeedDialog .discovery-post{scroll-snap-align:start;scroll-snap-stop:always}
+#discoveryFeedDialog .discovery-post-media{position:relative;overflow:hidden}
+#discoveryFeedDialog .discovery-post-media video{display:block;width:100%;height:auto;max-height:72dvh;object-fit:contain;background:#000}
