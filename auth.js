@@ -268,7 +268,8 @@
   }
 
   db.auth.onAuthStateChange(() => {
-    refreshSession();
+    // No ejecutar consultas dentro del bloqueo interno de Auth.
+    window.setTimeout(() => refreshSession(), 0);
   });
 
   setMode("login");
