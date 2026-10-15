@@ -527,3 +527,19 @@ body{background:radial-gradient(ellipse at 50% -18%,#4d155e 0,transparent 42%),r
 .challenge-art-symbol{position:relative;z-index:1;font-size:58px;filter:drop-shadow(0 8px 20px rgba(0,0,0,.45))}
 .challenge-card .challenge-art .tag{z-index:2}
 .challenge-card-video+.tag{position:absolute;z-index:3;top:12px;left:12px}
+
+
+/* RetoArena vertical video discovery feed */
+.discovery-feed-dialog{overscroll-behavior:contain}
+.discovery-feed-body{min-height:0}
+.discovery-feed-items{scroll-snap-type:y proximity;overscroll-behavior-y:contain}
+.discovery-post{scroll-snap-align:start;scroll-snap-stop:normal}
+.discovery-post-media video{width:100%;max-height:66dvh;aspect-ratio:9/16;object-fit:contain;background:#020207}
+@media(max-width:700px){
+  .discovery-feed-dialog{display:flex;flex-direction:column}
+  .discovery-feed-top{flex:0 0 auto}
+  .discovery-feed-body{flex:1;min-height:0;overflow-y:auto;overscroll-behavior-y:contain;-webkit-overflow-scrolling:touch}
+  .discovery-feed-items{gap:20px;scroll-snap-type:y mandatory}
+  .discovery-post{scroll-snap-align:start;scroll-margin-top:8px}
+  .discovery-post-media video{max-height:58dvh;aspect-ratio:9/16;object-fit:contain}
+}
