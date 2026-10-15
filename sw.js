@@ -1,4 +1,4 @@
-const CACHE = "retoarena-v07";
+const CACHE = "retoarena-v08";
 const APP_SHELL = [
   "./",
   "./index.html",
@@ -16,7 +16,7 @@ const APP_SHELL = [
 self.addEventListener("install", (event) => {
   event.waitUntil(
     caches.open(CACHE)
-      .then((cache) => cache.addAll(APP_SHELL))
+      .then((cache) => Promise.allSettled(APP_SHELL.map((asset) => cache.add(asset))))
       .then(() => self.skipWaiting())
   );
 });
