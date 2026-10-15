@@ -496,3 +496,29 @@ body{background:radial-gradient(ellipse at 50% -18%,#4d155e 0,transparent 42%),r
     will-change:transform;
   }
 }
+
+
+/* RetoArena v30 — reto real, categorías y publicación directa de vídeo */
+.challenge-video-picker{display:flex!important;align-items:center;gap:14px;padding:18px!important;border:1px dashed #b14acb;border-radius:18px;background:linear-gradient(115deg,rgba(240,55,173,.11),rgba(124,58,237,.13));cursor:pointer}
+.challenge-video-picker .challenge-video-icon{display:grid;place-items:center;flex:0 0 52px;height:52px;border-radius:15px;background:linear-gradient(135deg,#f02eaa,#873bff);font-size:30px;color:white}
+.challenge-video-picker span:nth-child(2){display:grid;gap:5px}
+.challenge-video-picker strong{color:#fff;font-size:15px}
+.challenge-video-picker small{color:#bcb0d1;font-size:12px}
+.challenge-video-picker input{display:block!important;max-width:100%;margin-top:8px;font-size:12px}
+.challenge-video-preview{margin:12px 0;padding:10px;border:1px solid var(--line);border-radius:14px;background:#090811}
+.challenge-video-preview video{display:block;width:100%;max-height:320px;border-radius:10px;background:#000}
+.challenge-video-preview span{display:block;color:var(--muted);font-size:12px;margin-top:8px;overflow-wrap:anywhere}
+.challenge-empty{grid-column:1/-1;padding:32px 22px;border:1px solid rgba(192,83,255,.35);border-radius:24px;text-align:center;background:radial-gradient(ellipse at 50% 0%,rgba(183,55,255,.18),transparent 70%),#11101d}
+.challenge-empty>span{display:inline-grid;place-items:center;width:64px;height:64px;border-radius:20px;background:linear-gradient(135deg,#f02eaa,#873bff);font-size:28px}
+.challenge-empty h3{font-size:21px;margin:16px 0 8px}
+.challenge-empty p{max-width:460px;margin:0 auto 18px;color:var(--muted);line-height:1.6}
+.challenge-card .challenge-art{min-height:150px;position:relative;overflow:hidden;background-image:radial-gradient(circle at 75% 18%,rgba(255,255,255,.22),transparent 20%),linear-gradient(135deg,#31104f,#141126 52%,#701b5c)}
+.challenge-card .challenge-art:after{content:"";position:absolute;inset:0;background:linear-gradient(110deg,transparent 30%,rgba(255,255,255,.07) 50%,transparent 70%);pointer-events:none}
+.challenge-card .challenge-art .emoji{font-size:52px;filter:drop-shadow(0 8px 20px rgba(0,0,0,.4))}
+.challenge-card .challenge-art.art-red{background-image:radial-gradient(circle at 75% 20%,rgba(255,70,92,.3),transparent 25%),linear-gradient(135deg,#401225,#15101d 55%,#9e1d49)}
+.challenge-card .challenge-art.art-orange{background-image:radial-gradient(circle at 75% 20%,rgba(255,174,66,.35),transparent 25%),linear-gradient(135deg,#552713,#17101b 55%,#c04d22)}
+.challenge-card .challenge-art.art-blue{background-image:radial-gradient(circle at 75% 20%,rgba(67,202,255,.3),transparent 25%),linear-gradient(135deg,#112b50,#141126 55%,#2455a5)}
+.challenge-card .challenge-art.art-pink{background-image:radial-gradient(circle at 75% 20%,rgba(255,75,197,.3),transparent 25%),linear-gradient(135deg,#40113b,#151126 55%,#9329a7)}
+.filters{display:flex;gap:8px;flex-wrap:wrap;max-width:100%}
+.filters .filter{white-space:nowrap}
+@media(max-width:600px){.filters{overflow-x:auto;flex-wrap:nowrap;padding:2px 0 8px;scrollbar-width:none}.filters::-webkit-scrollbar{display:none}.filters .filter{flex:0 0 auto}.challenge-video-picker{align-items:flex-start;flex-wrap:wrap}.challenge-video-picker input{width:100%}.submit-form .primary-btn.full{min-height:58px}}
