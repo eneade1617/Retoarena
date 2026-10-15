@@ -44,6 +44,74 @@
     leaderboard.parentNode.insertBefore(section, leaderboard);
   }
 
+
+  // Public profile modal: show the participant's approved challenges.
+  if (!$("#publicProfileDialog")) {
+    const profileDialog = document.createElement("dialog");
+    profileDialog.id = "publicProfileDialog";
+    profileDialog.style.cssText = "max-width:560px;width:calc(100% - 32px);max-height:82vh;overflow:auto;border:1px solid #554078;border-radius:20px;background:#151326;color:white;padding:24px";
+    profileDialog.innerHTML = '<form method="dialog"><button aria-label="Cerrar perfil" style="float:right;background:none;color:white;border:0;font-size:24px;cursor:pointer">×</button></form><div id="publicProfileDetails"></div>';
+    document.body.appendChild(profileDialog);
+  }
+
+  async function showPublicProfile(profileId) {
+    const profile = window.retoArenaProfilesById?.[profileId];
+    const profileDialog = $("#publicProfileDialog");
+    const details = $("#publicProfileDetails");
+    if (!profile || !profileDialog || !details) return;
+    const name = profile.display_name || profile.username || "Jugador";
+    const image = safeUrl(profile.avatar_url || "");
+    const avatar = image
+      ? '<img src="' + esc(image) + '" alt="" style="width:68px;height:68px;border-radius:50%;object-fit:cover">'
+      : '<div style="width:68px;height:68px;border-radius:50%;display:grid;place-items:center;background:#7650bb;font-weight:bold;font-size:20px">' + esc(name.slice(0,2).toUpperCase()) + '</div>';
+    details.innerHTML = '<div style="display:flex;gap:14px;align-items:center;margin:8px 0 18px">' + avatar +
+      '<div><h2 style="margin:0 0 5px">' + esc(name) + '</h2><p style="margin:0;color:#c1afff">@' +
+      esc(profile.username || "jugador") + '</p><small style="color:var(--muted)">' +
+      Number(profile.points || 0).toLocaleString("es-ES") + ' puntos</small></div></div><p style="line-height:1.6;color:#ddd8ed">' +
+      esc(profile.bio || "Este participante todavía no ha añadido una presentación.") +
+      '</p><h3 style="margin-top:24px">Retos publicados</h3><div id="profileChallenges" style="display:grid;gap:10px"><p style="color:var(--muted)">Cargando retos…</p></div>';
+    if (!profileDialog.open) profileDialog.showModal();
+    const target = $("#profileChallenges", details);
+    const { data, error } = await db.from("challenges")
+      .select("id, title, description, video_url, created_at")
+      .eq("creator_id", profileId)
+      .eq("status", "approved")
+      .order("created_at", { ascending: false })
+      .limit(20);
+    if (!profileDialog.open || !target) return;
+    if (error) {
+      target.innerHTML = '<p style="color:var(--muted)">No se pudieron cargar los retos de este participante.</p>';
+      console.warn("RetoArena: error cargando retos del perfil:", error.message);
+      return;
+    }
+    if (!data?.length) {
+      target.innerHTML = '<p style="color:var(--muted)">Todavía no tiene retos aprobados.</p>';
+      return;
+    }
+    target.innerHTML = data.map(challenge => {
+      const url = safeUrl(challenge.video_url || "");
+      return '<article style="padding:12px;border:1px solid var(--line);border-radius:12px;background:var(--panel2)"><strong>' +
+        esc(challenge.title) + '</strong><p style="margin:6px 0;color:var(--muted);font-size:13px">' +
+        esc(challenge.description || "Sin descripción") + '</p>' +
+        (url ? '<a href="' + esc(url) + '" target="_blank" rel="noopener noreferrer" style="color:#c1afff">Ver vídeo ↗</a>' : '') +
+        '</article>';
+    }).join("");
+  }
+
+  document.addEventListener("click", event => {
+    const card = event.target.closest("#publicProfiles .community-card");
+    if (!card) return;
+    const profileId = card.getAttribute("data-profile-id");
+    if (profileId) showPublicProfile(profileId);
+  });
+  document.addEventListener("keydown", event => {
+    if (event.key !== "Enter" && event.key !== " ") return;
+    const card = event.target.closest?.("#publicProfiles .community-card[role='button']");
+    if (!card) return;
+    event.preventDefault();
+    showPublicProfile(card.getAttribute("data-profile-id"));
+  });
+
   async function loadProfiles() {
     const grid = $("#publicProfiles");
     const count = $("#communityCount");
@@ -92,7 +160,7 @@
         ? '<span class="player-avatar" style="background-image:url(&quot;' + esc(image) + '&quot;);background-size:cover;background-position:center;color:transparent">' + esc(name.slice(0,2).toUpperCase()) + '</span>'
         : '<span class="player-avatar">' + esc(name.slice(0,2).toUpperCase()) + '</span>';
       return `
-        <article class="community-card">
+        <article class="community-card" data-profile-id="${esc(profile.id)}" tabindex="0" role="button" aria-label="Ver perfil de ${esc(name)}" style="cursor:pointer">
           <div style="display:flex;flex-direction:column;align-items:center;gap:7px;min-width:70px">
             ${avatar}
             <span style="font-size:10px;color:var(--muted)">${Number(profile.points || 0).toLocaleString("es-ES")} pts</span>
@@ -145,6 +213,66 @@
       button.style.color = ownVotes.has(challengeId) ? "#ff8bc8" : "";
     });
   }
+
+
+  // Sponsor / local business contact section, backed by Supabase.
+  if (!$("#sponsorSection")) {
+    const sponsorSection = document.createElement("section");
+    sponsorSection.id = "sponsorSection";
+    sponsorSection.className = "section";
+    sponsorSection.innerHTML = `
+      <div class="section-heading">
+        <div><span class="eyebrow">CRECEMOS CON NEGOCIOS LOCALES</span><h2>Patrocina RetoArena</h2></div>
+        <span class="pill">Colaboraciones</span>
+      </div>
+      <div class="sponsor-panel" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,260px),1fr));gap:22px;padding:22px;border:1px solid var(--line);border-radius:20px;background:var(--panel)">
+        <div><h3>Tu negocio puede ser parte del reto</h3><p style="color:var(--muted);line-height:1.7;font-size:14px">Conecta tu marca con una comunidad que participa, crea vídeos y descubre nuevos retos. Buscamos negocios locales para premios patrocinados, retos de marca y colaboraciones transparentes.</p><ul style="color:var(--muted);font-size:13px;line-height:1.9;padding-left:20px"><li>Retos patrocinados con reglas claras</li><li>Visibilidad de marca en campañas piloto</li><li>Colaboraciones sin compromiso inicial</li></ul><p style="font-size:11px;color:var(--muted)">Los patrocinios no se consideran confirmados hasta acordar por escrito las condiciones.</p></div>
+        <form id="sponsorLeadForm" style="display:grid;gap:11px;align-content:start">
+          <label style="display:grid;gap:6px;font-size:12px">Nombre del negocio<input name="business_name" required minlength="2" maxlength="100" placeholder="Ej. Cafetería Central"></label>
+          <label style="display:grid;gap:6px;font-size:12px">Persona de contacto<input name="contact_name" required minlength="2" maxlength="80" placeholder="Tu nombre"></label>
+          <label style="display:grid;gap:6px;font-size:12px">Correo electrónico<input name="email" type="email" required maxlength="254" placeholder="contacto@negocio.es"></label>
+          <label style="display:grid;gap:6px;font-size:12px">¿Qué colaboración te interesa?<textarea name="message" required minlength="10" maxlength="1000" rows="3" placeholder="Cuéntanos qué tipo de colaboración tienes en mente"></textarea></label>
+          <button class="primary-btn full" type="submit">Enviar propuesta ↗</button>
+          <p id="sponsorFeedback" role="status" style="font-size:12px;color:var(--muted);margin:0"></p>
+        </form>
+      </div>`;
+    const footer = $("footer");
+    if (footer) footer.parentNode.insertBefore(sponsorSection, footer);
+    else if (leaderboard?.parentNode) leaderboard.parentNode.insertBefore(sponsorSection, leaderboard.nextSibling);
+  }
+
+  const sponsorForm = $("#sponsorLeadForm");
+  if (sponsorForm) sponsorForm.addEventListener("submit", async event => {
+    event.preventDefault();
+    const button = sponsorForm.querySelector('button[type="submit"]');
+    const feedback = $("#sponsorFeedback");
+    const fd = new FormData(sponsorForm);
+    const lead = {
+      business_name: String(fd.get("business_name") || "").trim(),
+      contact_name: String(fd.get("contact_name") || "").trim(),
+      email: String(fd.get("email") || "").trim(),
+      message: String(fd.get("message") || "").trim()
+    };
+    if (button) button.disabled = true;
+    if (feedback) feedback.textContent = "Enviando propuesta…";
+    try {
+      const { error } = await db.from("sponsor_leads").insert(lead);
+      if (error) throw error;
+      sponsorForm.reset();
+      if (feedback) feedback.textContent = "¡Gracias! Hemos recibido tu interés. Te contactaremos si los datos de contacto son válidos.";
+      notify("Propuesta de patrocinio enviada.");
+    } catch (error) {
+      console.error("RetoArena: error guardando propuesta:", error.message);
+      if (feedback) feedback.textContent = "No se pudo enviar ahora. Inténtalo de nuevo más tarde.";
+    } finally {
+      if (button) button.disabled = false;
+    }
+  });
+
+  window.retoArenaRefreshCommunity = async () => {
+    await loadProfiles();
+    await loadVotes();
+  };
 
   // Keep the existing renderer and its demo content, then enable votes for approved database challenges.
   if (typeof window.renderCommunity === "function" && !window.retoArenaOriginalCommunityRenderer) {
