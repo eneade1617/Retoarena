@@ -50,6 +50,10 @@
         style="width:100%;padding:12px;border:0;border-radius:10px;background:#9657ee;color:white;font-weight:bold">
         Entrar
       </button>
+      <button id="forgotPasswordButton" type="button"
+        style="width:100%;padding:10px;margin-top:8px;border:0;background:transparent;color:#f2a8df;text-decoration:underline">
+        ¿Olvidaste tu contraseña?
+      </button>
       <button id="registerButton" type="button"
         style="width:100%;padding:12px;margin-top:10px;border:1px solid #8b5cf6;border-radius:10px;background:transparent;color:white">
         Crear cuenta
@@ -67,6 +71,7 @@
   const feedback = dialog.querySelector("#authFeedback");
   const loginButton = dialog.querySelector("#loginButton");
   const registerButton = dialog.querySelector("#registerButton");
+  const forgotPasswordButton = dialog.querySelector("#forgotPasswordButton");
 
   let mode = "login";
   let busy = false;
@@ -78,18 +83,24 @@
   function setMode(nextMode) {
     mode = nextMode;
     const registering = mode === "register";
+    const recovering = mode === "recovery";
     dialog.querySelector("#authTitle").textContent =
-      registering ? "Crear cuenta" : "Entrar en RetoArena";
-    loginButton.textContent = registering ? "Registrarme" : "Entrar";
-    registerButton.textContent =
-      registering ? "Ya tengo cuenta" : "Crear cuenta";
+      registering ? "Crear cuenta" : recovering ? "Nueva contraseña" : "Entrar en RetoArena";
+    dialog.querySelector("#authMessage").textContent =
+      recovering ? "Escribe una contraseña nueva para recuperar tu cuenta." : "Accede para publicar tus retos.";
+    loginButton.textContent = registering ? "Registrarme" : recovering ? "Guardar nueva contraseña" : "Entrar";
+    registerButton.textContent = registering ? "Ya tengo cuenta" : "Crear cuenta";
+    registerButton.style.display = recovering ? "none" : "block";
+    forgotPasswordButton.style.display = mode === "login" ? "block" : "none";
+    email.parentElement.style.display = recovering ? "none" : "block";
+    email.required = !recovering;
     username.required = registering;
-    password.minLength = registering ? 8 : 1;
-    password.autocomplete = registering ? "new-password" : "current-password";
-    password.placeholder = registering ? "Mínimo 8 caracteres" : "";
+    password.minLength = registering || recovering ? 8 : 1;
+    password.autocomplete = registering || recovering ? "new-password" : "current-password";
+    password.placeholder = registering || recovering ? "Mínimo 8 caracteres" : "";
     username.style.display = registering ? "block" : "none";
     username.parentElement.style.display = registering ? "block" : "none";
-    showFeedback("");
+    showFeedback(recovering ? "La contraseña debe tener al menos 8 caracteres." : "");
   }
 
   async function ensureProfile(user) {
@@ -148,6 +159,31 @@
     dialog.showModal();
   });
 
+  forgotPasswordButton.addEventListener("click", async () => {
+    const address = email.value.trim();
+    if (!address) {
+      showFeedback("Escribe primero el correo electrónico de tu cuenta.");
+      email.focus();
+      return;
+    }
+    if (busy) return;
+    busy = true;
+    forgotPasswordButton.disabled = true;
+    showFeedback("Enviando enlace de recuperación…");
+    try {
+      const { error } = await db.auth.resetPasswordForEmail(address, {
+        redirectTo: location.origin + location.pathname
+      });
+      if (error) throw error;
+      showFeedback("Si existe una cuenta con ese correo, recibirás un enlace para crear una contraseña nueva. Revisa también spam.");
+    } catch (error) {
+      showFeedback(error.message || "No se pudo enviar el correo de recuperación.");
+    } finally {
+      busy = false;
+      forgotPasswordButton.disabled = false;
+    }
+  });
+
   registerButton.addEventListener("click", () => {
     setMode(mode === "login" ? "register" : "login");
   });
@@ -163,7 +199,15 @@
     try {
       let result;
 
-      if (mode === "register") {
+      if (mode === "recovery") {
+        result = await db.auth.updateUser({ password: password.value });
+        if (result.error) throw result.error;
+        showFeedback("Contraseña actualizada. Ya puedes volver a entrar con tu nueva contraseña.");
+        password.value = "";
+        await refreshSession();
+        setTimeout(() => dialog.close(), 1800);
+        return;
+      } else if (mode === "register") {
         result = await db.auth.signUp({
           email: email.value.trim(),
           password: password.value,
@@ -267,7 +311,13 @@
     }, true);
   }
 
-  db.auth.onAuthStateChange(() => {
+  db.auth.onAuthStateChange((event) => {
+    // El enlace de correo devuelve a esta página en modo recuperación.
+    if (event === "PASSWORD_RECOVERY") {
+      setMode("recovery");
+      if (!dialog.open) dialog.showModal();
+      showFeedback("Escribe tu nueva contraseña y pulsa «Guardar nueva contraseña».");
+    }
     // No ejecutar consultas dentro del bloqueo interno de Auth.
     window.setTimeout(() => refreshSession(), 0);
   });
