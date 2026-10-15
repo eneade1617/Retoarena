@@ -76,7 +76,7 @@ function renderCommunity() {
     id: "supabase-" + r.id,
     title: r.title,
     desc: r.description || "Reto aprobado por la comunidad.",
-    creator: "Comunidad",
+    creator: (window.retoArenaProfilesById && window.retoArenaProfilesById[r.creator_id] && (window.retoArenaProfilesById[r.creator_id].display_name || window.retoArenaProfilesById[r.creator_id].username)) || "Comunidad",
     icon: "🎬",
     votes: 0,
     pending: false
