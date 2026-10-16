@@ -608,3 +608,36 @@ body{background:radial-gradient(ellipse at 50% -18%,#4d155e 0,transparent 42%),r
   .discovery-quick-actions{position:relative;z-index:2;gap:7px;padding:10px 12px}
   .discovery-quick-actions button{min-height:42px;font-size:12px;padding:9px 13px}
 }
+
+
+/* v44 — barra vertical de interacción en vídeos de Descubrir */
+.discovery-post-media{position:relative;isolation:isolate}
+.discovery-post-media video,.discovery-post-media img{display:block;width:100%}
+.discovery-video-rail{
+  position:absolute;z-index:5;right:8px;top:50%;transform:translateY(-50%);
+  display:flex;flex-direction:column;align-items:center;gap:12px;
+  width:58px;padding:10px 5px;border:1px solid rgba(255,255,255,.12);
+  border-radius:30px;background:rgba(9,7,17,.72);
+  -webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);
+}
+.discovery-video-rail .discovery-rail-button{
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;
+  width:48px;min-height:48px;padding:4px 1px;border:0;border-radius:20px;
+  color:#fff;background:transparent;font:inherit;cursor:pointer;
+  touch-action:manipulation;text-align:center;
+}
+.discovery-video-rail .discovery-rail-icon{font-size:24px;line-height:1.1;font-weight:800;text-shadow:0 2px 8px #000}
+.discovery-video-rail .discovery-rail-label{font-size:9px;line-height:1.15;font-weight:750;text-shadow:0 1px 5px #000}
+.discovery-video-rail .discovery-rail-count{font-size:10px;font-weight:800}
+.discovery-video-rail .discovery-rail-button.is-selected,
+.discovery-video-rail .discovery-rail-like.is-selected{color:#ff69c9}
+.discovery-video-rail .discovery-rail-button:active{transform:scale(.92)}
+.discovery-video-rail .discovery-rail-button:focus-visible{outline:2px solid #70eaff;outline-offset:2px}
+@media(max-width:700px){
+ .discovery-video-rail{right:6px;gap:10px;width:52px;padding:8px 2px;background:rgba(9,7,17,.78)}
+ .discovery-video-rail .discovery-rail-button{width:46px;min-height:46px}
+ .discovery-video-rail .discovery-rail-icon{font-size:23px}
+}
+@media(prefers-reduced-motion:no-preference){
+ .discovery-video-rail .discovery-rail-button{transition:transform .14s ease,color .14s ease}
+}
