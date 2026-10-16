@@ -259,6 +259,35 @@
         reactionsBox.appendChild(button);
       }
       controls.appendChild(reactionsBox);
+
+      // Acciones rápidas visibles antes del vídeo: evita tener que recorrer
+      // todo el contenido multimedia para poder reaccionar o comentar.
+      const quickBar = document.createElement("div");
+      quickBar.className = "discovery-quick-actions";
+      quickBar.setAttribute("aria-label", "Acciones rápidas de la publicación");
+      for (const item of [{id:"like",label:"♥ Me gusta"},{id:"epic",label:"🔥 Épico"},{id:"skill",label:"⚡ Qué nivel"}]) {
+        const sourceButton = [...reactionsBox.querySelectorAll("[data-social-reaction]")].find(button => button.dataset.socialReaction === item.id);
+        if (!sourceButton) continue;
+        const quickButton = sourceButton.cloneNode(true);
+        quickButton.classList.add("discovery-quick-reaction");
+        quickBar.appendChild(quickButton);
+      }
+      const quickComment = document.createElement("button");
+      quickComment.type = "button";
+      quickComment.className = "discovery-quick-comment";
+      quickComment.textContent = "💬 Comentar";
+      quickComment.setAttribute("aria-label", "Ir al campo de comentarios");
+      quickComment.addEventListener("click", () => {
+        const form = card.querySelector("[data-social-comment]");
+        const input = form?.elements?.comment;
+        if (form) form.scrollIntoView({behavior:"smooth", block:"center"});
+        if (input) window.setTimeout(() => input.focus({preventScroll:true}), 250);
+      });
+      quickBar.appendChild(quickComment);
+      const media = card.querySelector(".discovery-post-media");
+      if (media) card.insertBefore(quickBar, media);
+      else card.appendChild(quickBar);
+
       const commentList = document.createElement("div");
       commentList.className = "discovery-comments-preview";
       for (const cm of comments.filter(c => c.post_id === post.id).slice(-3)) {
