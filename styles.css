@@ -727,3 +727,8 @@ body{background:radial-gradient(ellipse at 50% -18%,#4d155e 0,transparent 42%),r
  .discovery-reaction-picker{gap:5px;padding:7px 8px;top:calc(50% - 24px)}
  .discovery-reaction-choice{width:38px;height:38px;font-size:22px}
 }
+
+
+/* v47: una sola barra de acciones; las reacciones se eligen manteniendo pulsado el corazón del vídeo. */
+#discoveryFeedItems .discovery-post-actions,
+#discoveryFeedItems .discovery-quick-actions{display:none!important}
