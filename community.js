@@ -226,6 +226,37 @@
     openDiscoveryFeed(postId || null);
   };
 
+  async function decorateChallengeFeed(target, challenges) {
+    if (!challenges || !challenges.length) return;
+    const ids = challenges.map(ch => ch.id);
+    const [session, rr, cc] = await Promise.all([db.auth.getSession(), db.from("challenge_social_reactions").select("challenge_id,user_id,reaction_type").in("challenge_id",ids), db.from("challenge_social_comments").select("id,challenge_id,user_id,body,created_at").in("challenge_id",ids).order("created_at",{ascending:true}).limit(200)]);
+    const userId=session.data.session && session.data.session.user ? session.data.session.user.id : null;
+    const reactions=rr.error?[]:(rr.data||[]), comments=cc.error?[]:(cc.data||[]);
+    const userIds=[...new Set(comments.map(x=>x.user_id))]; let profiles={};
+    if(userIds.length){const p=await db.from("profiles").select("id,username,display_name").in("id",userIds);if(!p.error)profiles=Object.fromEntries((p.data||[]).map(x=>[x.id,x]));}
+    for(const ch of challenges){
+      const card=target.querySelector('[data-discovery-challenge="' + ch.id + '"]'); if(!card)continue;
+      const mine=reactions.find(x=>x.challenge_id===ch.id&&x.user_id===userId);
+      const counts=reactions.filter(x=>x.challenge_id===ch.id).reduce((m,x)=>{m[x.reaction_type]=(m[x.reaction_type]||0)+1;return m;},{});
+      const bar=document.createElement("div");bar.className="discovery-quick-actions discovery-challenge-actions";
+      const like=document.createElement("button");like.type="button";like.className="discovery-quick-reaction"+(mine&&mine.reaction_type==="like"?" is-selected":"");like.dataset.challengeReaction="like";like.dataset.challengeId=ch.id;like.textContent="♥ Me gusta "+(counts.like||0);bar.appendChild(like);
+      const commentBtn=document.createElement("button");commentBtn.type="button";commentBtn.className="discovery-quick-comment";commentBtn.textContent="💬 Comentar";commentBtn.addEventListener("click",()=>{const f=card.querySelector("[data-challenge-comment]");if(f){f.scrollIntoView({behavior:"smooth",block:"center"});f.elements.comment.focus({preventScroll:true});}});bar.appendChild(commentBtn);
+      const media=card.querySelector(".discovery-post-media");if(media)card.insertBefore(bar,media);else card.appendChild(bar);
+      if(media){const rail=document.createElement("div");rail.className="discovery-video-rail";const heart=document.createElement("button");heart.type="button";heart.className="discovery-rail-button discovery-rail-like"+(mine&&mine.reaction_type==="like"?" is-selected":"");heart.dataset.challengeReaction="like";heart.dataset.challengeId=ch.id;heart.innerHTML='<span class="discovery-rail-icon">♥</span><span class="discovery-rail-label">Me gusta</span><span class="discovery-rail-count">'+(counts.like||0)+'</span>';rail.appendChild(heart);
+        const cb=document.createElement("button");cb.type="button";cb.className="discovery-rail-button";cb.innerHTML='<span class="discovery-rail-icon">💬</span><span class="discovery-rail-label">Comentar</span>';cb.addEventListener("click",()=>{const f=card.querySelector("[data-challenge-comment]");if(f){f.scrollIntoView({behavior:"smooth",block:"center"});f.elements.comment.focus({preventScroll:true});}});rail.appendChild(cb);media.appendChild(rail);}
+      const controls=document.createElement("div");controls.className="discovery-social-controls";const list=document.createElement("div");list.className="discovery-comments-preview";
+      const recent=comments.filter(x=>x.challenge_id===ch.id).slice(-3);if(!recent.length){const p=document.createElement("p");p.textContent="Sé el primero en comentar este reto.";list.appendChild(p);}recent.forEach(cm=>{const p=profiles[cm.user_id]||{},line=document.createElement("div");line.className="discovery-comment";const who=document.createElement("strong");who.textContent=p.display_name||p.username||"Competidor";const body=document.createElement("span");body.textContent=cm.body;line.append(who,body);list.appendChild(line);});controls.appendChild(list);
+      if(userId){const form=document.createElement("form");form.className="discovery-comment-form";form.dataset.challengeComment=ch.id;const input=document.createElement("input");input.name="comment";input.required=true;input.maxLength=500;input.placeholder="Comenta este reto…";const send=document.createElement("button");send.type="submit";send.textContent="➤";form.append(input,send);controls.appendChild(form);}else{const p=document.createElement("p");p.className="discovery-login-hint";p.textContent="Inicia sesión para reaccionar y comentar.";controls.appendChild(p);}
+      card.appendChild(controls);
+    }
+  }
+
+  async function toggleChallengeReaction(challengeId, reactionType) {
+    const {data}=await db.auth.getSession();const userId=data.session&&data.session.user?data.session.user.id:null;if(!userId){notify("Entra en tu cuenta para reaccionar.");return;}
+    const {data:existing,error}=await db.from("challenge_social_reactions").select("id,reaction_type").eq("challenge_id",challengeId).eq("user_id",userId).maybeSingle();if(error){notify("No se pudo consultar tu reacción.");return;}
+    let result;if(existing&&existing.reaction_type===reactionType)result=await db.from("challenge_social_reactions").delete().eq("id",existing.id);else if(existing)result=await db.from("challenge_social_reactions").update({reaction_type:reactionType}).eq("id",existing.id);else result=await db.from("challenge_social_reactions").insert({challenge_id:challengeId,user_id:userId,reaction_type:reactionType});
+    if(result.error){notify("No se pudo guardar la reacción.");return;}await openDiscoveryFeed(challengeId);
+  }
   async function decorateSocialFeed(target, posts) {
     const { data: sessionData } = await db.auth.getSession();
     const userId = sessionData.session?.user?.id || null;
