@@ -285,6 +285,56 @@
       });
       quickBar.appendChild(quickComment);
       const media = card.querySelector(".discovery-post-media");
+      if (media) {
+        // Barra flotante inspirada en patrones de vídeo corto, adaptada a RetoArena.
+        const rail = document.createElement("div");
+        rail.className = "discovery-video-rail";
+        rail.setAttribute("aria-label", "Acciones del vídeo");
+        const makeRailButton = (icon, label, action) => {
+          const button = document.createElement("button");
+          button.type = "button";
+          button.className = "discovery-rail-button";
+          button.setAttribute("aria-label", label);
+          button.title = label;
+          button.innerHTML = '<span class="discovery-rail-icon" aria-hidden="true">' + icon + '</span><span class="discovery-rail-label">' + label + '</span>';
+          button.addEventListener("click", action);
+          return button;
+        };
+        const likeSource = [...reactionsBox.querySelectorAll("[data-social-reaction]")].find(button => button.dataset.socialReaction === "like");
+        if (likeSource) {
+          const like = likeSource.cloneNode(true);
+          like.className = "discovery-rail-button discovery-rail-like" + (likeSource.classList.contains("is-selected") ? " is-selected" : "");
+          like.innerHTML = '<span class="discovery-rail-icon" aria-hidden="true">♥</span><span class="discovery-rail-label">Me gusta</span><span class="discovery-rail-count">' + (reactionCounts.like || 0) + '</span>';
+          rail.appendChild(like);
+        }
+        rail.appendChild(makeRailButton("💬", "Comentar", () => {
+          const form = card.querySelector("[data-social-comment]");
+          const input = form?.elements?.comment;
+          if (form) form.scrollIntoView({behavior:"smooth",block:"center"});
+          if (input) window.setTimeout(() => input.focus({preventScroll:true}), 250);
+          else if (!userId) window.alert("Inicia sesión para comentar.");
+        }));
+        rail.appendChild(makeRailButton("↗", "Compartir", async () => {
+          const shareData = {title: card.querySelector(".discovery-post-title")?.textContent || "RetoArena", text: card.querySelector(".discovery-post-caption p")?.textContent || "Mira este reto en RetoArena", url: window.location.href.split("#")[0] + "#discovery"};
+          try {
+            if (navigator.share) await navigator.share(shareData);
+            else if (navigator.clipboard?.writeText) { await navigator.clipboard.writeText(shareData.url); window.alert("Enlace copiado. ¡Compártelo!"); }
+            else window.prompt("Copia el enlace para compartir:", shareData.url);
+          } catch (error) { if (error?.name !== "AbortError") window.alert("No se pudo abrir la opción de compartir."); }
+        }));
+        const mediaUrl = safeUrl(posts.find(p => p.id === post.id)?.media_url || "");
+        if (mediaUrl) rail.appendChild(makeRailButton("↓", "Descargar vídeo", async () => {
+          const download = document.createElement("a");
+          download.href = mediaUrl;
+          download.target = "_blank";
+          download.rel = "noopener noreferrer";
+          download.download = "retoarena-video";
+          document.body.appendChild(download);
+          download.click();
+          download.remove();
+        }));
+        media.appendChild(rail);
+      }
       if (media) card.insertBefore(quickBar, media);
       else card.appendChild(quickBar);
 
