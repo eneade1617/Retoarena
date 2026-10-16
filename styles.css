@@ -578,3 +578,33 @@ body{background:radial-gradient(ellipse at 50% -18%,#4d155e 0,transparent 42%),r
 #discoveryFeedDialog .discovery-post{scroll-snap-align:start;scroll-snap-stop:always}
 #discoveryFeedDialog .discovery-post-media{position:relative;overflow:hidden}
 #discoveryFeedDialog .discovery-post-media video{display:block;width:100%;height:auto;max-height:72dvh;object-fit:contain;background:#000}
+
+
+/* v43 — acciones sociales rápidas antes del vídeo */
+.discovery-quick-actions{
+  display:flex;align-items:center;gap:8px;flex-wrap:nowrap;
+  padding:10px 12px;margin:0;
+  overflow-x:auto;overscroll-behavior-x:contain;
+  scrollbar-width:none;border-bottom:1px solid rgba(255,255,255,.07);
+  background:linear-gradient(90deg,rgba(242,56,165,.07),rgba(135,60,255,.06));
+}
+.discovery-quick-actions::-webkit-scrollbar{display:none}
+.discovery-quick-actions button{
+  display:inline-flex;align-items:center;justify-content:center;gap:5px;
+  flex:0 0 auto;min-height:38px;padding:8px 12px;
+  border:1px solid rgba(255,255,255,.16);border-radius:999px;
+  background:rgba(255,255,255,.035);color:#eee5f4;
+  font:inherit;font-size:12px;font-weight:750;white-space:nowrap;
+  cursor:pointer;touch-action:manipulation;
+}
+.discovery-quick-actions button.is-selected{
+  border-color:#f34cae;background:rgba(243,76,174,.18);color:#ffc0e6;
+}
+.discovery-quick-actions .discovery-quick-comment{
+  border-color:rgba(243,76,174,.42);background:rgba(243,76,174,.12);color:#ffb4df;
+}
+.discovery-quick-actions button:active{transform:scale(.97)}
+@media(max-width:700px){
+  .discovery-quick-actions{position:relative;z-index:2;gap:7px;padding:10px 12px}
+  .discovery-quick-actions button{min-height:42px;font-size:12px;padding:9px 13px}
+}
