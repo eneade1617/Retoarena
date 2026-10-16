@@ -144,6 +144,7 @@
     }).join("");
     // Las reacciones y comentarios existentes se aplican solo a profile_posts.
     await decorateSocialFeed(target, socialRows);
+    await decorateChallengeFeed(target, challengeRows);
 
     // Feed vertical: reproduce solo el vídeo que está a la vista.
     const feedScroller = $("#discoveryFeedDialog .discovery-feed-body");
@@ -457,6 +458,18 @@
   }
 
   document.addEventListener("submit", async event => {
+    const challengeForm = event.target.closest("[data-challenge-comment]");
+    if (challengeForm) {
+      event.preventDefault();
+      const {data} = await db.auth.getSession(), userId = data.session?.user?.id;
+      if (!userId) { notify("Entra en tu cuenta para comentar."); return; }
+      const input = challengeForm.elements.comment, body = input.value.trim(); if (!body) return;
+      const submit = challengeForm.querySelector("button"); submit.disabled = true;
+      const {error} = await db.from("challenge_social_comments").insert({challenge_id:challengeForm.dataset.challengeComment,user_id:userId,body});
+      submit.disabled = false;
+      if (error) { notify("No se pudo publicar el comentario del reto."); return; }
+      notify("Comentario publicado."); await openDiscoveryFeed(challengeForm.dataset.challengeComment); return;
+    }
     const form = event.target.closest("[data-social-comment]"); if (!form) return;
     event.preventDefault();
     const {data} = await db.auth.getSession(), userId = data.session?.user?.id;
@@ -470,6 +483,7 @@
   });
 
   document.addEventListener("click", event => {
+    const challengeReaction=event.target.closest("[data-challenge-reaction]"); if(challengeReaction){toggleChallengeReaction(challengeReaction.dataset.challengeId,challengeReaction.dataset.challengeReaction);return;}
     const reaction=event.target.closest("[data-social-reaction]"); if(reaction){toggleSocialReaction(reaction.dataset.socialPost,reaction.dataset.socialReaction);return;}
     const follow=event.target.closest("[data-social-follow]"); if(follow){toggleSocialFollow(follow.dataset.socialFollow);return;}
     if(event.target.closest("#openNotifications")){openSocialNotifications();return;}
