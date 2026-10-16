@@ -641,3 +641,64 @@ body{background:radial-gradient(ellipse at 50% -18%,#4d155e 0,transparent 42%),r
 @media(prefers-reduced-motion:no-preference){
  .discovery-video-rail .discovery-rail-button{transition:transform .14s ease,color .14s ease}
 }
+
+
+/* v45 — ensure the video action rail is visible above media on mobile */
+.discovery-post .discovery-post-media{
+  position:relative!important;
+  isolation:isolate!important;
+  overflow:hidden!important;
+}
+.discovery-post .discovery-post-media > .discovery-video-rail{
+  position:absolute!important;
+  display:flex!important;
+  flex-direction:column!important;
+  align-items:center!important;
+  justify-content:center!important;
+  top:50%!important;
+  right:8px!important;
+  bottom:auto!important;
+  left:auto!important;
+  width:58px!important;
+  height:auto!important;
+  max-height:calc(100% - 24px)!important;
+  transform:translateY(-50%)!important;
+  z-index:999!important;
+  opacity:1!important;
+  visibility:visible!important;
+  pointer-events:auto!important;
+  gap:10px!important;
+  padding:9px 4px!important;
+  border:1px solid rgba(255,255,255,.22)!important;
+  border-radius:30px!important;
+  background:rgba(10,7,20,.88)!important;
+  box-shadow:0 4px 22px rgba(0,0,0,.4)!important;
+}
+.discovery-post .discovery-post-media > .discovery-video-rail .discovery-rail-button{
+  display:flex!important;
+  flex:0 0 auto!important;
+  width:48px!important;
+  min-height:48px!important;
+  color:#fff!important;
+  opacity:1!important;
+  visibility:visible!important;
+  position:relative!important;
+  z-index:1000!important;
+}
+.discovery-post .discovery-post-media > .discovery-video-rail .discovery-rail-icon{
+  font-size:25px!important;
+  line-height:1.1!important;
+  text-shadow:0 2px 8px #000!important;
+}
+@media(max-width:700px){
+  .discovery-post .discovery-post-media > .discovery-video-rail{
+    right:5px!important;
+    width:52px!important;
+    gap:8px!important;
+    padding:7px 2px!important;
+  }
+  .discovery-post .discovery-post-media > .discovery-video-rail .discovery-rail-button{
+    width:46px!important;
+    min-height:46px!important;
+  }
+}
