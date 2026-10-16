@@ -227,6 +227,20 @@
     openDiscoveryFeed(postId || null);
   };
 
+  function attachReactionPicker(button, card, itemId, kind) {
+    if (!button || button.dataset.pickerReady === "1") return;
+    button.dataset.pickerReady = "1"; let timer = null;
+    const clear = () => { if (timer) clearTimeout(timer); timer = null; };
+    const open = () => {
+      card.querySelectorAll(".discovery-reaction-picker").forEach(x => x.remove());
+      const picker=document.createElement("div");picker.className="discovery-reaction-picker";picker.setAttribute("role","group");picker.setAttribute("aria-label","Elegir reacción");
+      const options=[["like","♥","Me gusta"],["epic","🔥","Épico"],["skill","⚡","Qué nivel"],["funny","😂","Me hizo reír"],["legend","🏆","Leyenda"]];
+      options.forEach(([type,emoji,label])=>{const b=document.createElement("button");b.type="button";b.className="discovery-reaction-choice";b.textContent=emoji;b.title=label;b.setAttribute("aria-label",label);b.addEventListener("click",async e=>{e.stopPropagation();picker.remove();button.dataset.longPressed="1";if(kind==="challenge")await toggleChallengeReaction(itemId,type);else await toggleSocialReaction(itemId,type);window.setTimeout(()=>delete button.dataset.longPressed,700);});picker.appendChild(b);});
+      card.appendChild(picker);
+    };
+    button.addEventListener("pointerdown",()=>{clear();timer=window.setTimeout(()=>{button.dataset.longPressed="1";open();},520);},{passive:true});
+    ["pointerup","pointercancel","pointerleave"].forEach(type=>button.addEventListener(type,clear,{passive:true}));
+  }
   async function decorateChallengeFeed(target, challenges) {
     if (!challenges || !challenges.length) return;
     const ids = challenges.map(ch => ch.id);
@@ -240,10 +254,10 @@
       const mine=reactions.find(x=>x.challenge_id===ch.id&&x.user_id===userId);
       const counts=reactions.filter(x=>x.challenge_id===ch.id).reduce((m,x)=>{m[x.reaction_type]=(m[x.reaction_type]||0)+1;return m;},{});
       const bar=document.createElement("div");bar.className="discovery-quick-actions discovery-challenge-actions";
-      const like=document.createElement("button");like.type="button";like.className="discovery-quick-reaction"+(mine&&mine.reaction_type==="like"?" is-selected":"");like.dataset.challengeReaction="like";like.dataset.challengeId=ch.id;like.textContent="♥ Me gusta "+(counts.like||0);bar.appendChild(like);
+      const like=document.createElement("button");like.type="button";like.className="discovery-quick-reaction"+(mine&&mine.reaction_type==="like"?" is-selected":"");like.dataset.challengeReaction="like";like.dataset.challengeId=ch.id;like.textContent="♥ Me gusta "+(counts.like||0);bar.appendChild(like);attachReactionPicker(like,card,ch.id,"challenge");
       const commentBtn=document.createElement("button");commentBtn.type="button";commentBtn.className="discovery-quick-comment";commentBtn.textContent="💬 Comentar";commentBtn.addEventListener("click",()=>{const f=card.querySelector("[data-challenge-comment]");if(f){f.scrollIntoView({behavior:"smooth",block:"center"});f.elements.comment.focus({preventScroll:true});}});bar.appendChild(commentBtn);
       const media=card.querySelector(".discovery-post-media");if(media)card.insertBefore(bar,media);else card.appendChild(bar);
-      if(media){const rail=document.createElement("div");rail.className="discovery-video-rail";const heart=document.createElement("button");heart.type="button";heart.className="discovery-rail-button discovery-rail-like"+(mine&&mine.reaction_type==="like"?" is-selected":"");heart.dataset.challengeReaction="like";heart.dataset.challengeId=ch.id;heart.innerHTML='<span class="discovery-rail-icon">♥</span><span class="discovery-rail-label">Me gusta</span><span class="discovery-rail-count">'+(counts.like||0)+'</span>';rail.appendChild(heart);
+      if(media){const rail=document.createElement("div");rail.className="discovery-video-rail";const heart=document.createElement("button");heart.type="button";heart.className="discovery-rail-button discovery-rail-like"+(mine&&mine.reaction_type==="like"?" is-selected":"");heart.dataset.challengeReaction="like";heart.dataset.challengeId=ch.id;heart.innerHTML='<span class="discovery-rail-icon">♥</span><span class="discovery-rail-label">Me gusta</span><span class="discovery-rail-count">'+(counts.like||0)+'</span>';rail.appendChild(heart);attachReactionPicker(heart,card,ch.id,"challenge");
         const cb=document.createElement("button");cb.type="button";cb.className="discovery-rail-button";cb.innerHTML='<span class="discovery-rail-icon">💬</span><span class="discovery-rail-label">Comentar</span>';cb.addEventListener("click",()=>{const f=card.querySelector("[data-challenge-comment]");if(f){f.scrollIntoView({behavior:"smooth",block:"center"});f.elements.comment.focus({preventScroll:true});}});rail.appendChild(cb);media.appendChild(rail);}
       const controls=document.createElement("div");controls.className="discovery-social-controls";const list=document.createElement("div");list.className="discovery-comments-preview";
       const recent=comments.filter(x=>x.challenge_id===ch.id).slice(-3);if(!recent.length){const p=document.createElement("p");p.textContent="Sé el primero en comentar este reto.";list.appendChild(p);}recent.forEach(cm=>{const p=profiles[cm.user_id]||{},line=document.createElement("div");line.className="discovery-comment";const who=document.createElement("strong");who.textContent=p.display_name||p.username||"Competidor";const body=document.createElement("span");body.textContent=cm.body;line.append(who,body);list.appendChild(line);});controls.appendChild(list);
@@ -297,12 +311,13 @@
       const quickBar = document.createElement("div");
       quickBar.className = "discovery-quick-actions";
       quickBar.setAttribute("aria-label", "Acciones rápidas de la publicación");
-      for (const item of [{id:"like",label:"♥ Me gusta"},{id:"epic",label:"🔥 Épico"},{id:"skill",label:"⚡ Qué nivel"}]) {
+      for (const item of [{id:"like",label:"♥ Me gusta"}]) {
         const sourceButton = [...reactionsBox.querySelectorAll("[data-social-reaction]")].find(button => button.dataset.socialReaction === item.id);
         if (!sourceButton) continue;
         const quickButton = sourceButton.cloneNode(true);
         quickButton.classList.add("discovery-quick-reaction");
         quickBar.appendChild(quickButton);
+        attachReactionPicker(quickButton, card, post.id, "post");
       }
       const quickComment = document.createElement("button");
       quickComment.type = "button";
@@ -338,6 +353,7 @@
           like.className = "discovery-rail-button discovery-rail-like" + (likeSource.classList.contains("is-selected") ? " is-selected" : "");
           like.innerHTML = '<span class="discovery-rail-icon" aria-hidden="true">♥</span><span class="discovery-rail-label">Me gusta</span><span class="discovery-rail-count">' + (reactionCounts.like || 0) + '</span>';
           rail.appendChild(like);
+          attachReactionPicker(like, card, post.id, "post");
         }
         rail.appendChild(makeRailButton("💬", "Comentar", () => {
           const form = card.querySelector("[data-social-comment]");
@@ -483,8 +499,9 @@
   });
 
   document.addEventListener("click", event => {
-    const challengeReaction=event.target.closest("[data-challenge-reaction]"); if(challengeReaction){toggleChallengeReaction(challengeReaction.dataset.challengeId,challengeReaction.dataset.challengeReaction);return;}
-    const reaction=event.target.closest("[data-social-reaction]"); if(reaction){toggleSocialReaction(reaction.dataset.socialPost,reaction.dataset.socialReaction);return;}
+    const choice=event.target.closest(".discovery-reaction-choice"); if(choice)return;
+    const challengeReaction=event.target.closest("[data-challenge-reaction]"); if(challengeReaction){if(challengeReaction.dataset.longPressed==="1"){delete challengeReaction.dataset.longPressed;return;}toggleChallengeReaction(challengeReaction.dataset.challengeId,challengeReaction.dataset.challengeReaction);return;}
+    const reaction=event.target.closest("[data-social-reaction]"); if(reaction){if(reaction.dataset.longPressed==="1"){delete reaction.dataset.longPressed;return;}toggleSocialReaction(reaction.dataset.socialPost,reaction.dataset.socialReaction);return;}
     const follow=event.target.closest("[data-social-follow]"); if(follow){toggleSocialFollow(follow.dataset.socialFollow);return;}
     if(event.target.closest("#openNotifications")){openSocialNotifications();return;}
     if(event.target.closest("#socialNotificationsClose")){$("#socialNotificationsDialog")?.close();return;}
