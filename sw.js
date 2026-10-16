@@ -1,4 +1,4 @@
-const CACHE = "retoarena-v43";
+const CACHE = "retoarena-v44";
 const APP_SHELL = [
   "./",
   "./index.html",
